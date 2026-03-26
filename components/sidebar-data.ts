@@ -12,25 +12,19 @@ export const data = {
   navMain: [
     {
       title: "Dashboard",
-      url: "/dashboard",
+      url: "/app",
       icon: House,
       isActive: true,
     },
     {
       title: "Campaigns",
-      url: "/campaigns",
+      url: "/app/campaigns",
       icon: FolderKanban,
       isActive: true,
     },
     {
-      title: "Employees",
-      url: "/employees",
-      icon: Users,
-      isActive: true,
-    },
-    {
       title: "Summary",
-      url: "/summary",
+      url: "/app/summary",
       icon: ChartPie,
       isActive: true,
     },
@@ -198,13 +192,13 @@ export const data = {
     // },
     {
       title: "Billing",
-      url: "/billing",
+      url: "/app/billing",
       icon: Wallet,
       isActive: true,
     },
     {
       title: "Settings",
-      url: "/settings",
+      url: "/app/settings",
       icon: Settings,
       isActive: true,
     },
