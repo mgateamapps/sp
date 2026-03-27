@@ -46,10 +46,9 @@ export interface Campaign {
   name: string;
   description: string | null;
   status: CampaignStatus;
+  deadline: string | null;
   created_at: string;
   updated_at: string;
-  started_at: string | null;
-  completed_at: string | null;
 }
 
 // Link between campaign and employee with secure token

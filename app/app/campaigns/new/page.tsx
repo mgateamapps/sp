@@ -1,17 +1,22 @@
 import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { getCurrentAdminProfile } from "@/lib/queries/admin";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { redirect } from "next/navigation";
+import { NewCampaignForm } from "./new-campaign-form";
 
 export const metadata: Metadata = {
-  title: "New Campaign | Admin Panel",
-  description: "Create a new campaign",
+  title: "New Campaign | ScorePrompt",
+  description: "Create a new assessment campaign",
 };
 
-export default function NewCampaignPage() {
+export default async function NewCampaignPage() {
+  const admin = await getCurrentAdminProfile();
+  if (!admin) {
+    redirect('/auth/login');
+  }
+
   return (
     <>
       <DashboardBreadcrumb title="New Campaign" text="Campaigns / New" />
@@ -25,25 +30,7 @@ export default function NewCampaignPage() {
 
       <div className="rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-6 max-w-2xl">
         <h1 className="text-2xl font-bold mb-6">Create New Campaign</h1>
-        
-        <form className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="name">Campaign Name</Label>
-            <Input id="name" placeholder="Enter campaign name" />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <Input id="description" placeholder="Enter campaign description" />
-          </div>
-
-          <div className="flex gap-4">
-            <Button type="submit">Create Campaign</Button>
-            <Link href="/app/campaigns">
-              <Button type="button" variant="outline">Cancel</Button>
-            </Link>
-          </div>
-        </form>
+        <NewCampaignForm />
       </div>
     </>
   );

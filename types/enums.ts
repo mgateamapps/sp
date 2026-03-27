@@ -1,5 +1,5 @@
 // Campaign lifecycle status
-export type CampaignStatus = 'draft' | 'active' | 'completed' | 'archived';
+export type CampaignStatus = 'draft' | 'active' | 'closed';
 
 // Participant status within a campaign
 export type ParticipantStatus = 'invited' | 'started' | 'completed';
