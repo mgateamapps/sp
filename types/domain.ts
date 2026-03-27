@@ -56,9 +56,11 @@ export interface CampaignParticipant {
   id: string;
   campaign_id: string;
   employee_id: string;
-  token: string; // Secure invite token
+  token: string | null; // Legacy plain token (deprecated)
+  token_hash: string | null; // SHA256 hash of invite token
   status: ParticipantStatus;
   invited_at: string;
+  opened_at: string | null;
   started_at: string | null;
   completed_at: string | null;
 }
@@ -66,9 +68,10 @@ export interface CampaignParticipant {
 // One assessment attempt by a participant
 export interface AssessmentAttempt {
   id: string;
-  participant_id: string;
+  campaign_participant_id: string;
   status: AttemptStatus;
-  started_at: string;
+  created_at: string;
+  updated_at: string;
   submitted_at: string | null;
   scored_at: string | null;
 }
@@ -78,30 +81,50 @@ export interface AssessmentResponse {
   id: string;
   attempt_id: string;
   scenario_key: ScenarioKey;
-  prompt_text: string;
+  response_text: string;
   created_at: string;
+  updated_at: string;
 }
 
-// AI-generated score for a single scenario response
+// Score for a single scenario with rubric breakdown
 export interface ScenarioScore {
   id: string;
-  response_id: string;
-  criterion: RubricCriterion;
-  score: number; // 1-4
-  feedback: string | null;
+  attempt_id: string;
+  scenario_key: ScenarioKey;
+  clarity_score: number;
+  context_score: number;
+  constraints_score: number;
+  output_format_score: number;
+  verification_score: number;
+  scenario_score: number;
+  strengths_json: string[];
+  weaknesses_json: string[];
+  coaching_tips_json: string[];
+  improved_prompt: string | null;
+  summary_feedback: string | null;
+  rubric_version: string;
   created_at: string;
+  updated_at: string;
 }
 
 // Aggregate score for entire assessment attempt
 export interface AssessmentScore {
   id: string;
   attempt_id: string;
+  clarity_score: number;
+  context_score: number;
+  constraints_score: number;
+  output_format_score: number;
+  verification_score: number;
   total_score: number;
-  max_score: number;
-  percentage: number;
-  band: ScoreBand;
+  score_band: ScoreBand;
+  strengths_json: string[];
+  weaknesses_json: string[];
+  coaching_tips_json: string[];
   summary_feedback: string | null;
+  rubric_version: string;
   created_at: string;
+  updated_at: string;
 }
 
 // Joined types for common queries

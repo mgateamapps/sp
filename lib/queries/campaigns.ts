@@ -103,3 +103,28 @@ export async function getCampaignParticipants(campaignId: string): Promise<Parti
 
   return data as ParticipantWithEmployee[];
 }
+
+export interface ParticipantWithCampaignAndEmployee extends CampaignParticipant {
+  employee: Employee;
+  campaign: Campaign;
+}
+
+export async function getParticipantById(
+  participantId: string
+): Promise<ParticipantWithCampaignAndEmployee | null> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from('campaign_participants')
+    .select(`
+      *,
+      employee:employees(*),
+      campaign:campaigns(*)
+    `)
+    .eq('id', participantId)
+    .single();
+
+  if (error || !data) return null;
+
+  return data as ParticipantWithCampaignAndEmployee;
+}

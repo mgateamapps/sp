@@ -1,6 +1,6 @@
 import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -12,9 +12,11 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getCurrentAdminProfile } from "@/lib/queries/admin";
 import { getCampaignWithStats, getCampaignParticipants } from "@/lib/queries/campaigns";
+import { getAssessmentScoreByParticipantId } from "@/lib/queries/scoring";
+import { SendInvitesButton } from "./send-invites-button";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowLeft, Calendar, Mail, Users, CheckCircle, Clock, Send } from "lucide-react";
+import { ArrowLeft, Calendar, Mail, Users, CheckCircle, Clock, Eye, ExternalLink } from "lucide-react";
 import { redirect, notFound } from "next/navigation";
 
 export const metadata: Metadata = {
@@ -42,6 +44,7 @@ function getParticipantStatusBadge(status: string): "default" | "secondary" | "o
     case 'completed':
       return 'default';
     case 'started':
+    case 'opened':
       return 'secondary';
     default:
       return 'outline';
@@ -68,6 +71,22 @@ function formatDateTime(dateString: string | null): string {
   });
 }
 
+function ScoreBadge({ score }: { score: number }) {
+  let colorClass = 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
+  if (score >= 80) {
+    colorClass = 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
+  } else if (score >= 60) {
+    colorClass = 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
+  } else if (score >= 40) {
+    colorClass = 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300';
+  }
+  return (
+    <span className={`px-2 py-0.5 rounded text-sm font-medium ${colorClass}`}>
+      {score}
+    </span>
+  );
+}
+
 export default async function CampaignDetailPage({ params }: CampaignPageProps) {
   const { campaignId } = await params;
   
@@ -89,6 +108,18 @@ export default async function CampaignDetailPage({ params }: CampaignPageProps) 
   const completionRate = campaign.participant_count > 0
     ? Math.round((campaign.completed_count / campaign.participant_count) * 100)
     : 0;
+
+  const pendingInviteCount = participants.filter(p => !p.token_hash && p.status === 'invited').length;
+  const openedCount = participants.filter(p => p.status === 'opened' || p.status === 'started' || p.status === 'completed').length;
+
+  const participantsWithScores = await Promise.all(
+    participants.map(async (participant) => {
+      const score = participant.status === 'completed'
+        ? await getAssessmentScoreByParticipantId(participant.id)
+        : null;
+      return { ...participant, score };
+    })
+  );
 
   return (
     <>
@@ -129,10 +160,7 @@ export default async function CampaignDetailPage({ params }: CampaignPageProps) 
               )}
             </div>
           </div>
-          <Button variant="outline" disabled>
-            <Send className="w-4 h-4 mr-2" />
-            Send Invites
-          </Button>
+          <SendInvitesButton campaignId={campaignId} pendingCount={pendingInviteCount} />
         </div>
       </div>
 
@@ -151,12 +179,12 @@ export default async function CampaignDetailPage({ params }: CampaignPageProps) 
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-neutral-500">Started</CardTitle>
+            <CardTitle className="text-sm font-medium text-neutral-500">Opened</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
-              <Clock className="w-5 h-5 text-yellow-500" />
-              <span className="text-2xl font-bold">{campaign.started_count}</span>
+              <Eye className="w-5 h-5 text-blue-500" />
+              <span className="text-2xl font-bold">{openedCount}</span>
             </div>
           </CardContent>
         </Card>
@@ -203,13 +231,13 @@ export default async function CampaignDetailPage({ params }: CampaignPageProps) 
               <TableRow>
                 <TableHead>Email</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Invited</TableHead>
-                <TableHead>Started</TableHead>
+                <TableHead>Score</TableHead>
                 <TableHead>Completed</TableHead>
+                <TableHead className="w-[100px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {participants.map((participant) => (
+              {participantsWithScores.map((participant) => (
                 <TableRow key={participant.id}>
                   <TableCell className="font-medium">
                     {participant.employee.email}
@@ -219,14 +247,29 @@ export default async function CampaignDetailPage({ params }: CampaignPageProps) 
                       {participant.status}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-neutral-600 dark:text-neutral-400">
-                    {formatDateTime(participant.invited_at)}
-                  </TableCell>
-                  <TableCell className="text-neutral-600 dark:text-neutral-400">
-                    {formatDateTime(participant.started_at)}
+                  <TableCell>
+                    {participant.score ? (
+                      <ScoreBadge score={participant.score.total_score} />
+                    ) : (
+                      <span className="text-neutral-400">—</span>
+                    )}
                   </TableCell>
                   <TableCell className="text-neutral-600 dark:text-neutral-400">
                     {formatDateTime(participant.completed_at)}
+                  </TableCell>
+                  <TableCell>
+                    {participant.score ? (
+                      <Link href={`/app/campaigns/${campaignId}/employees/${participant.id}`}>
+                        <Button variant="ghost" size="sm">
+                          View
+                          <ExternalLink className="w-3 h-3 ml-1" />
+                        </Button>
+                      </Link>
+                    ) : (
+                      <Button variant="ghost" size="sm" disabled>
+                        View
+                      </Button>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}
