@@ -24,8 +24,11 @@ export const loginSchema = z.object({
 
 // Register Schema
 export const registerSchema = loginSchema.extend({
-  username: z.string().min(2, {
-    message: "Username must be at least 2 characters.",
+  fullName: z.string().min(2, {
+    message: "Full name must be at least 2 characters.",
+  }),
+  organizationName: z.string().min(2, {
+    message: "Organization name must be at least 2 characters.",
   }),
   acceptTerms: z.literal(true, {
     errorMap: () => ({ message: "You must accept the terms and conditions" }),

@@ -1,33 +1,25 @@
-"use client";
-
 import RegisterForm from "@/components/auth/register-form";
 import ThemeLogo from "@/components/shared/theme-logo";
 import AuthImage from "@/public/assets/images/auth/auth-img.png";
-import { StaticImg } from "@/types/static-image";
 import type { Metadata } from "next";
 import Image from "next/image";
 
-const metadata: Metadata = {
-  title: "Cards & Content Containers | WowDash Admin Dashboard",
-  description:
-    "Showcase versatile card components and content containers for organized layout in the WowDash Admin Dashboard built with Next.js and Tailwind CSS.",
+export const metadata: Metadata = {
+  title: "Sign Up | ScorePrompt",
+  description: "Create your ScorePrompt admin account to start assessing employee AI literacy.",
 };
 
-const forgotPassImage: StaticImg = {
-  image: AuthImage,
-};
-
-const Register = () => {
+export default function RegisterPage() {
   return (
     <section className="bg-white dark:bg-slate-900 flex flex-wrap min-h-screen">
       {/* Left Image */}
       <div className="lg:w-1/2 hidden lg:block">
         <div className="flex items-center justify-center h-screen flex-col">
-          <Image
-            src={forgotPassImage.image}
-            alt="Auth Illustration"
-            className="object-cover w-full h-full"
-          />
+            <Image
+              src={AuthImage}
+              alt="ScorePrompt"
+              className="object-cover w-full h-full"
+            />
         </div>
       </div>
 
@@ -52,6 +44,4 @@ const Register = () => {
       </div>
     </section>
   );
-};
-
-export default Register;
+}
