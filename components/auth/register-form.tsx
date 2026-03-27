@@ -85,7 +85,7 @@ const RegisterForm = () => {
                     <Input
                       {...field}
                       type="text"
-                      placeholder="Full Name"
+                      placeholder="Full name"
                       className="ps-13 pe-12 h-14 rounded-xl bg-neutral-100 dark:bg-slate-800 border border-neutral-300 dark:border-slate-700 focus:border-primary dark:focus:border-primary focus-visible:border-primary !shadow-none !ring-0"
                       disabled={isSubmitting}
                     />
@@ -107,7 +107,7 @@ const RegisterForm = () => {
                     <Input
                       {...field}
                       type="text"
-                      placeholder="Organization Name"
+                      placeholder="Company name"
                       className="ps-13 pe-12 h-14 rounded-xl bg-neutral-100 dark:bg-slate-800 border border-neutral-300 dark:border-slate-700 focus:border-primary dark:focus:border-primary focus-visible:border-primary !shadow-none !ring-0"
                       disabled={isSubmitting}
                     />
@@ -129,7 +129,7 @@ const RegisterForm = () => {
                     <Input
                       {...field}
                       type="email"
-                      placeholder="Email"
+                      placeholder="Work email"
                       className="ps-13 pe-12 h-14 rounded-xl bg-neutral-100 dark:bg-slate-800 border border-neutral-300 dark:border-slate-700 focus:border-primary dark:focus:border-primary focus-visible:border-primary !shadow-none !ring-0"
                       disabled={isSubmitting}
                     />
@@ -220,20 +220,24 @@ const RegisterForm = () => {
                 Creating account...
               </>
             ) : (
-              "Sign Up"
+              "Create account"
             )}
           </Button>
+
+          <p className="text-xs text-neutral-500 text-center mt-3">
+            No employee accounts required for the assessment flow.
+          </p>
         </form>
       </Form>
 
       <div className="mt-8 text-center text-sm">
-        <p>
+        <p className="text-neutral-500">
           Already have an account?{" "}
           <Link
             href="/auth/login"
             className="text-primary font-semibold hover:underline"
           >
-            Sign In
+            Log in
           </Link>
         </p>
       </div>

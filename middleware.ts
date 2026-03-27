@@ -15,6 +15,7 @@ export const config = {
      * - public folder
      * - invite routes (public token-based access)
      */
+    "/",
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$|invite).*)",
   ],
 };
