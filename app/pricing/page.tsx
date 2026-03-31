@@ -1,9 +1,6 @@
-'use client';
-
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
 import {
   Collapsible,
   CollapsibleContent,
@@ -11,7 +8,7 @@ import {
 } from '@/components/ui/collapsible';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useState } from 'react';
+import type { Metadata } from 'next';
 import {
   ChevronDown,
   CheckCircle,
@@ -22,12 +19,18 @@ import {
   RefreshCw,
   Mail,
   FileText,
-  Zap,
   Target,
-  TrendingUp,
-  XCircle,
   Sparkles,
+  Gift,
+  Calendar,
+  Zap,
 } from 'lucide-react';
+
+export const metadata: Metadata = {
+  title: 'Pricing | ScorePrompt',
+  description:
+    "Start with a pilot, assess your team's AI prompting capability, and get structured results. Simple pricing for companies serious about AI literacy.",
+};
 
 function Header() {
   return (
@@ -92,16 +95,12 @@ function HeroSection() {
 }
 
 function PricingSection() {
-  const [isAnnual, setIsAnnual] = useState(false);
-
   const plans = [
     {
       name: 'Test',
       badge: null,
-      monthlyPrice: 'Free',
-      annualPrice: 'Free',
+      price: 'Free',
       priceDetail: 'try it yourself first',
-      annualPriceDetail: 'try it yourself first',
       description:
         'Try out the assessment yourself. See the scenarios, experience the flow, and understand what your team would go through.',
       features: [
@@ -118,21 +117,19 @@ function PricingSection() {
     {
       name: 'Team',
       badge: 'Most Popular',
-      monthlyPrice: '$2',
-      annualPrice: '$6',
+      price: '$2',
       priceDetail: 'per employee / campaign',
-      annualPriceDetail: 'per employee / year',
       description:
         'For companies up to 50 employees. Get a complete AI literacy baseline with individual feedback and company-wide insights.',
       features: [
         'Up to 50 employees',
-        ...(isAnnual ? ['4 campaigns per year', 'Pay for 3, get 1 free'] : ['Unlimited campaigns']),
+        'Pay per campaign',
         'Individual employee feedback',
         'Company dashboard',
         'Weakness analysis',
         'Email support',
       ],
-      cta: isAnnual ? 'Start annual plan' : 'Start now',
+      cta: 'Start now',
       ctaLink: '/auth/register',
       ctaVariant: 'default' as const,
       highlighted: true,
@@ -140,22 +137,19 @@ function PricingSection() {
     {
       name: 'Enterprise',
       badge: null,
-      monthlyPrice: '$1.50',
-      annualPrice: '$4.50',
+      price: '$1.50',
       priceDetail: 'per employee / campaign',
-      annualPriceDetail: 'per employee / year',
       description:
         'For larger organizations with 50+ employees. Better rates, custom onboarding, dedicated support, and advanced reporting.',
       features: [
         'Unlimited employees',
-        ...(isAnnual ? ['4 campaigns per year', 'Pay for 3, get 1 free'] : ['Unlimited campaigns']),
+        'Volume discount',
         'Priority support',
         'Custom onboarding',
         'Advanced analytics',
         'API access',
-        'SSO integration',
       ],
-      cta: isAnnual ? 'Start annual plan' : 'Get started',
+      cta: 'Get started',
       ctaLink: '/auth/register',
       ctaVariant: 'outline' as const,
       highlighted: false,
@@ -165,26 +159,6 @@ function PricingSection() {
   return (
     <section className="py-20 md:py-28 bg-white dark:bg-neutral-950 -mt-10">
       <div className="max-w-6xl mx-auto px-4">
-        {/* Billing Toggle */}
-        <div className="flex items-center justify-center gap-4 mb-12">
-          <span className={`text-sm font-medium ${!isAnnual ? 'text-neutral-900 dark:text-white' : 'text-neutral-500'}`}>
-            Monthly
-          </span>
-          <Switch
-            checked={isAnnual}
-            onCheckedChange={setIsAnnual}
-          />
-          <span className={`text-sm font-medium ${isAnnual ? 'text-neutral-900 dark:text-white' : 'text-neutral-500'}`}>
-            Annual
-          </span>
-          {isAnnual && (
-            <Badge variant="secondary" className="ml-2 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
-              <Sparkles className="w-3 h-3 mr-1" />
-              Save 25%
-            </Badge>
-          )}
-        </div>
-
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {plans.map((plan) => (
             <Card
@@ -205,20 +179,11 @@ function PricingSection() {
               <CardHeader className="pt-8 pb-4 text-center">
                 <CardTitle className="text-2xl font-bold text-heading">{plan.name}</CardTitle>
                 <div className="mt-4">
-                  <span className="text-4xl font-bold text-heading">
-                    {isAnnual ? plan.annualPrice : plan.monthlyPrice}
-                  </span>
+                  <span className="text-4xl font-bold text-heading">{plan.price}</span>
                 </div>
                 <div className="text-sm text-slate-500 mt-1">
-                  {isAnnual ? plan.annualPriceDetail : plan.priceDetail}
+                  {plan.priceDetail}
                 </div>
-                {isAnnual && plan.name !== 'Test' && (
-                  <div className="mt-2">
-                    <Badge variant="outline" className="text-xs">
-                      4 assessments included
-                    </Badge>
-                  </div>
-                )}
               </CardHeader>
               <CardContent className="pt-4">
                 <p className="text-slate-600 dark:text-neutral-400 mb-6 text-center">
@@ -252,10 +217,154 @@ function PricingSection() {
         </div>
 
         <p className="text-center text-slate-500 mt-12 max-w-2xl mx-auto">
-          {isAnnual 
-            ? 'Annual plans include 4 assessments per year (pay for 3, get 1 free). Additional campaigns billed at standard rates.'
-            : 'All plans include the same 5 practical assessment scenarios and structured scoring rubric. Pay only for active employees assessed.'
-          }
+          All plans include the same 5 practical assessment scenarios and structured scoring rubric.
+          Pay only for active employees assessed.
+        </p>
+      </div>
+    </section>
+  );
+}
+
+function AnnualPlansSection() {
+  return (
+    <section className="py-20 md:py-28 relative overflow-hidden">
+      {/* Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-green-900 via-emerald-800 to-teal-900" />
+      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djItSDI0di0yaDEyek0zNiAyNHYySDI0di0yaDEyeiIvPjwvZz48L2c+PC9zdmc+')] opacity-50" />
+      
+      <div className="relative z-10 max-w-6xl mx-auto px-4">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-yellow-400/20 border border-yellow-400/30 rounded-full mb-6">
+            <Gift className="w-5 h-5 text-yellow-400" />
+            <span className="text-yellow-300 font-semibold">Special Offer</span>
+            <Sparkles className="w-4 h-4 text-yellow-400" />
+          </div>
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+            Save 25% with Annual Plans
+          </h2>
+          <p className="text-lg text-emerald-100 max-w-2xl mx-auto">
+            Commit to a year, get <span className="font-bold text-yellow-300">4 campaigns for the price of 3</span>. 
+            Perfect for teams running regular assessments.
+          </p>
+        </div>
+
+        {/* Annual Plan Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          {/* Team Annual */}
+          <div className="relative group">
+            <div className="absolute -inset-1 bg-gradient-to-r from-yellow-400 to-emerald-400 rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-300" />
+            <Card className="relative bg-white dark:bg-neutral-900 border-0 shadow-2xl">
+              <CardHeader className="pb-4">
+                <div className="flex items-center justify-between mb-2">
+                  <CardTitle className="text-xl font-bold text-heading">Team Annual</CardTitle>
+                  <Badge className="bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">
+                    Save 25%
+                  </Badge>
+                </div>
+                <p className="text-sm text-slate-500">Up to 50 employees</p>
+              </CardHeader>
+              <CardContent>
+                <div className="mb-6">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-4xl font-bold text-heading">$6</span>
+                    <span className="text-slate-500">/ employee / year</span>
+                  </div>
+                  <p className="text-sm text-slate-400 mt-1">
+                    <span className="line-through">$8</span> (4 × $2) → Pay for 3, get 4
+                  </p>
+                </div>
+
+                <ul className="space-y-3 mb-6">
+                  <li className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center shrink-0">
+                      <Calendar className="w-4 h-4 text-green-600 dark:text-green-400" />
+                    </div>
+                    <span className="text-slate-700 dark:text-slate-300">4 campaigns per year</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center shrink-0">
+                      <Gift className="w-4 h-4 text-green-600 dark:text-green-400" />
+                    </div>
+                    <span className="text-slate-700 dark:text-slate-300">1 campaign FREE</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center shrink-0">
+                      <Zap className="w-4 h-4 text-green-600 dark:text-green-400" />
+                    </div>
+                    <span className="text-slate-700 dark:text-slate-300">All Team features included</span>
+                  </li>
+                </ul>
+
+                <Link href="/auth/register" className="block">
+                  <Button className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700">
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    Get Annual Plan
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Enterprise Annual */}
+          <div className="relative group">
+            <div className="absolute -inset-1 bg-gradient-to-r from-emerald-400 to-teal-400 rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-300" />
+            <Card className="relative bg-white dark:bg-neutral-900 border-0 shadow-2xl">
+              <CardHeader className="pb-4">
+                <div className="flex items-center justify-between mb-2">
+                  <CardTitle className="text-xl font-bold text-heading">Enterprise Annual</CardTitle>
+                  <Badge className="bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">
+                    Save 25%
+                  </Badge>
+                </div>
+                <p className="text-sm text-slate-500">50+ employees</p>
+              </CardHeader>
+              <CardContent>
+                <div className="mb-6">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-4xl font-bold text-heading">$4.50</span>
+                    <span className="text-slate-500">/ employee / year</span>
+                  </div>
+                  <p className="text-sm text-slate-400 mt-1">
+                    <span className="line-through">$6</span> (4 × $1.50) → Pay for 3, get 4
+                  </p>
+                </div>
+
+                <ul className="space-y-3 mb-6">
+                  <li className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center shrink-0">
+                      <Calendar className="w-4 h-4 text-green-600 dark:text-green-400" />
+                    </div>
+                    <span className="text-slate-700 dark:text-slate-300">4 campaigns per year</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center shrink-0">
+                      <Gift className="w-4 h-4 text-green-600 dark:text-green-400" />
+                    </div>
+                    <span className="text-slate-700 dark:text-slate-300">1 campaign FREE</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center shrink-0">
+                      <Zap className="w-4 h-4 text-green-600 dark:text-green-400" />
+                    </div>
+                    <span className="text-slate-700 dark:text-slate-300">All Enterprise features included</span>
+                  </li>
+                </ul>
+
+                <Link href="/auth/register" className="block">
+                  <Button className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700">
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    Get Annual Plan
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* Extra info */}
+        <p className="text-center text-emerald-200 mt-10 text-sm max-w-xl mx-auto">
+          Need more than 4 campaigns? No problem — additional campaigns are billed at standard per-campaign rates.
         </p>
       </div>
     </section>
@@ -333,9 +442,9 @@ function FAQSection() {
         'The Test plan lets you personally experience the full assessment flow - all 5 scenarios and your personal feedback report. It\'s designed to help you understand what your team would go through before committing.',
     },
     {
-      question: 'How does annual billing work?',
+      question: 'How does the annual plan work?',
       answer:
-        'With annual billing, you pay upfront for the year and get 4 assessment campaigns included. You pay for 3 campaigns but get 4 - that\'s a 25% savings. If you need more than 4 campaigns in a year, additional ones are billed at standard rates.',
+        'With an annual plan, you pay upfront for the year and get 4 assessment campaigns included. You pay for 3 campaigns but get 4 — that\'s a 25% savings. If you need more than 4 campaigns in a year, additional ones are billed at standard per-campaign rates.',
     },
     {
       question: 'Do employees need accounts?',
@@ -343,14 +452,14 @@ function FAQSection() {
         'No. Employees complete the assessment through a secure email link. No separate employee login is required.',
     },
     {
-      question: 'Can we switch between monthly and annual?',
+      question: 'Can we switch from monthly to annual?',
       answer:
-        'Yes. You can upgrade to annual billing at any time to start saving. If you\'re on annual and want to switch to monthly, you can do so at the end of your billing period.',
+        'Yes! You can upgrade to an annual plan at any time to start saving. Your existing data and campaigns will be preserved.',
     },
     {
       question: 'What happens if we have more than 50 employees?',
       answer:
-        'The Enterprise plan supports unlimited employees with better per-employee rates. Both monthly and annual billing options are available.',
+        'Use the Enterprise plan which supports unlimited employees at a lower per-employee rate. Both pay-per-campaign and annual options are available.',
     },
     {
       question: 'Is this a training platform?',
@@ -485,6 +594,7 @@ export default function PricingPage() {
       <main>
         <HeroSection />
         <PricingSection />
+        <AnnualPlansSection />
         <WhatsIncludedSection />
         <FAQSection />
         <FinalCTASection />
