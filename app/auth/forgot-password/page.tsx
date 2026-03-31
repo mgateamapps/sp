@@ -1,59 +1,31 @@
-"use client";
-
 import ForgotPasswordComponent from "@/components/auth/forgot-password";
-import ThemeLogo from "@/components/shared/theme-logo";
-import AuthImage from "@/public/assets/images/auth/forgot-pass-img.png";
-import { StaticImg } from "@/types/static-image";
 import type { Metadata } from "next";
-import Image from "next/image";
+import Link from "next/link";
 
-const metadata: Metadata = {
-  title: "Forgot Password & Account Recovery | WowDash Admin Dashboard",
-  description:
-    "Recover your account by resetting your password in the WowDash Admin Dashboard built with Next.js and Tailwind CSS.",
+export const metadata: Metadata = {
+  title: "Forgot Password | ScorePrompt",
+  description: "Reset your ScorePrompt account password.",
 };
 
-const forgotPassImage: StaticImg = {
-  image: AuthImage,
-};
-
-const ForgotPassword = () => {
-
+export default function ForgotPasswordPage() {
   return (
-    <section className="bg-white dark:bg-slate-900 flex flex-wrap min-h-screen">
-      {/* Left Image */}
-      <div className="lg:w-1/2 hidden lg:block">
-        <div className="flex items-center justify-center h-screen flex-col">
-          <Image
-            src={forgotPassImage.image}
-            alt="Auth Illustration"
-            className="object-cover w-full h-full"
-          />
+    <section className="bg-white dark:bg-neutral-950 flex items-center justify-center min-h-screen">
+      <div className="w-full max-w-md px-6 py-12">
+        <div className="mb-8 text-center">
+          <Link href="/" className="text-2xl font-bold text-primary inline-block mb-6">
+            ScorePrompt
+          </Link>
+
+          <h1 className="text-2xl font-semibold mb-2 text-neutral-900 dark:text-white">
+            Forgot password?
+          </h1>
+          <p className="text-neutral-500 dark:text-neutral-400">
+            Enter your email address and we'll send you a link to reset your password.
+          </p>
         </div>
-      </div>
 
-      {/* Right Form */}
-      <div className="lg:w-1/2 w-full py-8 px-6 flex flex-col justify-center">
-        <div className="lg:max-w-[464px] w-full mx-auto">
-          {/* Logo and heading */}
-          <div>
-            <div className="mb-2.5 inline-block max-w-[290px]">
-              <ThemeLogo />
-            </div>
-
-            <h4 className="font-semibold mb-3">Forgot Password</h4>
-            <p className="mb-8 text-neutral-500 dark:text-neutral-300 text-lg">
-              Enter the email address associated with your account and we will
-              send you a link to reset your password.
-            </p>
-          </div>
-
-          {/* Login Form */}
-          <ForgotPasswordComponent />
-        </div>
+        <ForgotPasswordComponent />
       </div>
     </section>
   );
-};
-
-export default ForgotPassword;
+}

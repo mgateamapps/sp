@@ -85,7 +85,7 @@ const ProfileDropdown = () => {
           <ul className="flex flex-col gap-3">
             <li>
               <Link
-                href="/app/settings"
+                href="/dashboard/settings"
                 className="text-black dark:text-white hover:text-primary dark:hover:text-primary flex items-center gap-3"
               >
                 <User className="w-5 h-5" /> My Profile
@@ -93,7 +93,7 @@ const ProfileDropdown = () => {
             </li>
             <li>
               <Link
-                href="/app/settings"
+                href="/dashboard/settings"
                 className="text-black dark:text-white hover:text-primary dark:hover:text-primary flex items-center gap-3"
               >
                 <Settings className="w-5 h-5" /> Settings

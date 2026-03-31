@@ -24,4 +24,4 @@ export type RubricCriterion =
   | 'verification';
 
 // Score bands for categorizing performance
-export type ScoreBand = 'novice' | 'developing' | 'proficient' | 'advanced';
+export type ScoreBand = 'at_risk' | 'basic' | 'functional' | 'strong' | 'expert';

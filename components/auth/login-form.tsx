@@ -1,7 +1,6 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { Checkbox } from '@/components/ui/checkbox'
 import {
   Form,
   FormControl,
@@ -48,7 +47,7 @@ const LoginForm = () => {
         toast.error(error.message)
       } else {
         toast.success('Login successful!')
-        router.push('/app')
+        router.push('/dashboard')
         router.refresh()
       }
     } catch (error) {
@@ -120,21 +119,12 @@ const LoginForm = () => {
             )}
           />
 
-          <div className="mt-2 flex justify-between items-center">
-            <div className="flex items-center gap-2">
-              <Checkbox
-                id="remember"
-                className="border border-neutral-500 w-4.5 h-4.5"
-              />
-              <label htmlFor="remember" className="text-sm">
-                Remember me
-              </label>
-            </div>
+          <div className="mt-2 flex justify-end">
             <Link
               href="/auth/forgot-password"
               className="text-primary font-medium hover:underline text-sm"
             >
-              Forgot Password?
+              Forgot password?
             </Link>
           </div>
 

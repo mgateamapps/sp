@@ -1,8 +1,8 @@
 import LoginForm from "@/components/auth/login-form";
-import { Card, CardContent } from "@/components/ui/card";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Target, Users, AlertTriangle, BarChart3, CheckCircle } from "lucide-react";
+import Image from "next/image";
+import { Target, Users, BarChart3 } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Log In | ScorePrompt",
@@ -13,56 +13,54 @@ export default function LoginPage() {
   return (
     <section className="bg-white dark:bg-neutral-950 flex flex-wrap min-h-screen">
       {/* Left Promo Panel */}
-      <div className="lg:w-1/2 hidden lg:flex bg-neutral-50 dark:bg-neutral-900">
-        <div className="flex flex-col justify-center px-12 xl:px-20 py-12 w-full">
-          <div className="max-w-md">
-            <h2 className="text-2xl font-bold mb-4 text-neutral-900 dark:text-white">
-              Measure real AI prompting skill
+      <div className="lg:w-1/2 hidden lg:flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMyI+PHBhdGggZD0iTTM2IDM0djItSDI0di0yaDEyek0zNiAyNHYySDI0di0yaDEyeiIvPjwvZz48L2c+PC9zdmc+')] opacity-50" />
+        <div className="px-12 xl:px-16 py-12 w-full max-w-xl relative z-10">
+          <div className="mb-8">
+            <span className="inline-block px-3 py-1 text-xs font-medium bg-primary/20 text-primary rounded-full mb-4">
+              AI Literacy Assessment
+            </span>
+            <h2 className="text-3xl xl:text-4xl font-bold mb-4 text-white leading-tight">
+              Measure real AI<br />prompting skill
             </h2>
-            
-            <ul className="space-y-3 mb-8">
-              {[
-                "Assess employees with 5 practical scenarios",
-                "See structured scores and feedback",
-                "Track weak areas across the company",
-              ].map((item) => (
-                <li key={item} className="flex items-start gap-3 text-neutral-600 dark:text-neutral-400">
-                  <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 shrink-0" />
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-
-            <Card className="bg-white dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700">
-              <CardContent className="pt-6">
-                <div className="grid grid-cols-3 gap-4 mb-4">
-                  <div className="text-center">
-                    <div className="flex items-center justify-center gap-1 mb-1">
-                      <Target className="w-4 h-4 text-primary" />
-                    </div>
-                    <div className="text-xl font-bold">68/100</div>
-                    <div className="text-xs text-neutral-500">Avg. score</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="flex items-center justify-center gap-1 mb-1">
-                      <Users className="w-4 h-4 text-primary" />
-                    </div>
-                    <div className="text-xl font-bold">86%</div>
-                    <div className="text-xs text-neutral-500">Completion</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="flex items-center justify-center gap-1 mb-1">
-                      <AlertTriangle className="w-4 h-4 text-amber-500" />
-                    </div>
-                    <div className="text-sm font-semibold text-amber-600">Verification</div>
-                    <div className="text-xs text-neutral-500">Weakest area</div>
-                  </div>
+            <p className="text-slate-400 text-lg">
+              Get structured insights into how your team actually uses AI tools.
+            </p>
+          </div>
+          
+          <div className="space-y-4 mb-8">
+            {[
+              { text: "Assess with 5 practical scenarios", icon: Target },
+              { text: "See structured scores and feedback", icon: BarChart3 },
+              { text: "Track weak areas across the company", icon: Users },
+            ].map((item) => (
+              <div key={item.text} className="flex items-center gap-4 bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10">
+                <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center shrink-0">
+                  <item.icon className="w-5 h-5 text-primary" />
                 </div>
-                <p className="text-sm text-neutral-500 text-center">
-                  See participation, scores, and feedback across your team
-                </p>
-              </CardContent>
-            </Card>
+                <span className="text-slate-200">{item.text}</span>
+              </div>
+            ))}
+          </div>
+
+          <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10">
+            <div className="grid grid-cols-3 gap-4 mb-3">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-white">68</div>
+                <div className="text-xs text-slate-400">Avg. score</div>
+              </div>
+              <div className="text-center border-x border-white/10">
+                <div className="text-2xl font-bold text-white">86%</div>
+                <div className="text-xs text-slate-400">Completion</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-amber-400">!</div>
+                <div className="text-xs text-slate-400">Gaps found</div>
+              </div>
+            </div>
+            <p className="text-xs text-slate-500 text-center">
+              Example dashboard metrics
+            </p>
           </div>
         </div>
       </div>
@@ -70,12 +68,18 @@ export default function LoginPage() {
       {/* Right Form */}
       <div className="lg:w-1/2 w-full py-8 px-6 flex flex-col justify-center">
         <div className="lg:max-w-[440px] w-full mx-auto">
-          <div className="mb-8">
-            <Link href="/" className="text-2xl font-bold text-primary inline-block mb-6">
-              ScorePrompt
+          <div className="mb-8 text-center">
+            <Link href="/" className="inline-block mb-6">
+              <Image
+                src="/assets/images/logo.png"
+                alt="ScorePrompt"
+                width={120}
+                height={28}
+                priority
+              />
             </Link>
 
-            <h1 className="text-2xl font-semibold mb-2 text-neutral-900 dark:text-white">
+            <h1 className="text-2xl font-semibold mb-2 text-heading dark:text-white">
               Welcome back
             </h1>
             <p className="text-neutral-500 dark:text-neutral-400">

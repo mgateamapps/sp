@@ -128,3 +128,30 @@ export async function getParticipantById(
 
   return data as ParticipantWithCampaignAndEmployee;
 }
+
+export interface CampaignPayment {
+  id: string;
+  status: string;
+  amount_cents: number;
+  employee_count: number;
+  refund_amount_cents: number;
+  refund_employee_count: number;
+  completed_at: string | null;
+}
+
+export async function getCampaignPayment(campaignId: string): Promise<CampaignPayment | null> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from('payments')
+    .select('id, status, amount_cents, employee_count, refund_amount_cents, refund_employee_count, completed_at')
+    .eq('campaign_id', campaignId)
+    .in('status', ['completed', 'partially_refunded'])
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .single();
+
+  if (error || !data) return null;
+
+  return data as CampaignPayment;
+}

@@ -92,6 +92,10 @@ export async function createCampaign(formData: FormData): Promise<CreateCampaign
         employee = newEmployee;
       }
 
+      if (!employee) {
+        continue;
+      }
+
       const { error: participantError } = await supabase
         .from('campaign_participants')
         .insert({
@@ -105,7 +109,7 @@ export async function createCampaign(formData: FormData): Promise<CreateCampaign
       }
     }
 
-    revalidatePath('/app/campaigns');
+    revalidatePath('/dashboard/campaigns');
     return { success: true, campaignId: campaign.id };
   } catch (error) {
     console.error('Create campaign error:', error);
@@ -117,6 +121,6 @@ export async function createCampaignAndRedirect(formData: FormData): Promise<voi
   const result = await createCampaign(formData);
   
   if (result.success && result.campaignId) {
-    redirect(`/app/campaigns/${result.campaignId}`);
+    redirect(`/dashboard/campaigns/${result.campaignId}`);
   }
 }

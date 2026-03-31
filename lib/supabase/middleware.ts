@@ -33,10 +33,10 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Protect /app routes - require authentication
+  // Protect /dashboard routes - require authentication
   if (
     !user &&
-    request.nextUrl.pathname.startsWith("/app")
+    request.nextUrl.pathname.startsWith("/dashboard")
   ) {
     const url = request.nextUrl.clone();
     url.pathname = "/auth/login";
@@ -50,7 +50,7 @@ export async function updateSession(request: NextRequest) {
       request.nextUrl.pathname.startsWith("/auth/register"))
   ) {
     const url = request.nextUrl.clone();
-    url.pathname = "/app";
+    url.pathname = "/dashboard";
     return NextResponse.redirect(url);
   }
 

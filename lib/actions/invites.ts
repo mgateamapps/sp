@@ -58,7 +58,8 @@ export async function sendCampaignInvites(campaignId: string): Promise<SendInvit
   let failed = 0;
 
   for (const participant of participantsToInvite) {
-    const employee = participant.employee as { id: string; email: string };
+    const employeeData = participant.employee as { id: string; email: string } | { id: string; email: string }[] | null;
+    const employee = Array.isArray(employeeData) ? employeeData[0] : employeeData;
     
     if (!employee?.email) {
       failed++;
@@ -106,8 +107,8 @@ export async function sendCampaignInvites(campaignId: string): Promise<SendInvit
       .eq('id', campaignId);
   }
 
-  revalidatePath(`/app/campaigns/${campaignId}`);
-  revalidatePath('/app/campaigns');
+  revalidatePath(`/dashboard/campaigns/${campaignId}`);
+  revalidatePath('/dashboard/campaigns');
 
   return {
     success: true,

@@ -13,7 +13,7 @@ import { toast } from 'sonner';
 interface AssessmentFormProps {
   token: string;
   attemptId: string;
-  initialResponses: Record<ScenarioKey, string>;
+  initialResponses: Partial<Record<ScenarioKey, string>>;
   campaignName: string;
 }
 

@@ -328,7 +328,7 @@ function aggregateAssessmentScore(
       output_format_score: 0,
       verification_score: 0,
       total_score: 0,
-      score_band: 'novice',
+      score_band: 'at_risk',
       strengths: [],
       weaknesses: [],
       coaching_tips: [],

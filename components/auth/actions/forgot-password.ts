@@ -1,6 +1,6 @@
 'use server'
 
-import { z } from 'zod'
+import { createClient } from '@/lib/supabase/server'
 import { forgotPasswordSchema } from '@/lib/zod'
 
 export async function handleForgotPasswordAction(formData: FormData) {
@@ -10,11 +10,22 @@ export async function handleForgotPasswordAction(formData: FormData) {
   if (!parsed.success) {
     return {
       success: false,
-      error: parsed.error.flatten().fieldErrors,
+      error: 'Please enter a valid email address',
     }
   }
 
-  console.log(`Password reset email sent to ${parsed.data.email}`)
+  const supabase = await createClient()
+
+  const { error } = await supabase.auth.resetPasswordForEmail(parsed.data.email, {
+    redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/reset-password`,
+  })
+
+  if (error) {
+    return {
+      success: false,
+      error: error.message,
+    }
+  }
 
   return {
     success: true,
