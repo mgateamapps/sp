@@ -8,30 +8,19 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Wowdash - Tailwind & Next.js Admin Dashboard with shadcn UI (Typescript)",
-  description: "WowDash - Admin Dashboard Multipurpose Next.js, TypeScript, ShadCn UI & Tailwind Template",
-  metadataBase: new URL("https://wowdash-nextjs-typescript-shadcn-5fu5.vercel.app"),
+  title: "ScorePrompt - AI Literacy Assessment Platform",
+  description: "Measure and improve your team's AI literacy with ScorePrompt assessments.",
   openGraph: {
-    title: "Wowdash - Admin Dashboard UI",
-    description: "A modern, responsive admin dashboard template built with Next.js, Tailwind CSS, and ShadCN UI.",
-    url: "https://wowdash-nextjs-typescript-shadcn-5fu5.vercel.app",
-    siteName: "Wowdash",
-    images: [
-      {
-        url: "https://wowdash-nextjs-typescript-shadcn-5fu5.vercel.app/og-image.jpg",
-        width: 1200,
-        height: 630,
-        alt: "Wowdash Admin Dashboard Preview",
-      },
-    ],
+    title: "ScorePrompt - AI Literacy Assessment Platform",
+    description: "Measure and improve your team's AI literacy with ScorePrompt assessments.",
+    siteName: "ScorePrompt",
     locale: "en_US",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Wowdash - Admin Dashboard UI",
-    description: "A modern, responsive admin dashboard template built with Next.js, Tailwind CSS, and ShadCN UI.",
-    images: ["https://wowdash-nextjs-typescript-shadcn-5fu5.vercel.app/og-image.jpg"],
+    title: "ScorePrompt - AI Literacy Assessment Platform",
+    description: "Measure and improve your team's AI literacy with ScorePrompt assessments.",
   },
 };
 

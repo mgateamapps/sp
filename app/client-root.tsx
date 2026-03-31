@@ -3,7 +3,6 @@
 import { AppSidebar } from "@/components/app-sidebar";
 import Footer from "@/components/layout/footer";
 import Header from "@/components/layout/header";
-import ThemeCustomizer from "@/components/theme-customizer/theme-customizer";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { ReactNode } from "react";
@@ -34,7 +33,6 @@ export function ClientRoot({
           </div>
           <Footer />
         </main>
-        <ThemeCustomizer />
         <Toaster position="top-center" reverseOrder={false} />
       </SidebarProvider>
     </ThemeProvider>
