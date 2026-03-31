@@ -2,7 +2,9 @@ import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-const FROM_EMAIL = 'ScorePrompt <noreply@scoreprompt.com>';
+const FROM_EMAIL = process.env.NODE_ENV === 'production' 
+  ? 'ScorePrompt <noreply@scoreprompt.com>'
+  : 'ScorePrompt <onboarding@resend.dev>';
 
 export interface SendInviteEmailParams {
   to: string;

@@ -1,9 +1,22 @@
 import { createClient } from '@/lib/supabase/server';
 import { MockScorer } from './mock-scorer';
+import { OpenAIScorer } from './openai-scorer';
 import { RUBRIC_VERSION } from './types';
 import type { Scorer, ScoringInput } from './types';
 
-const scorer: Scorer = new MockScorer();
+function createScorer(): Scorer {
+  if (process.env.OPENAI_API_KEY) {
+    try {
+      return new OpenAIScorer();
+    } catch (e) {
+      console.warn('Failed to initialize OpenAI scorer, falling back to mock:', e);
+      return new MockScorer();
+    }
+  }
+  return new MockScorer();
+}
+
+const scorer: Scorer = createScorer();
 
 export interface ScoreAttemptResult {
   success: boolean;

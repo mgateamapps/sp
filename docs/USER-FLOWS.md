@@ -10,7 +10,7 @@ Admins are company representatives who manage AI literacy assessments for their 
 
 ### 1. Registration & Onboarding
 
-**Goal**: Create an admin account and organization.
+**Goal**: Create an admin account, organization, and select a plan.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -33,19 +33,31 @@ Admins are company representatives who manage AI literacy assessments for their 
 │     • Organization record                                   │
 │     • Admin profile (role: owner)                           │
 │                                                             │
-│  5. Redirect to login page                                  │
+│  5. Receive email verification link                         │
 │                                                             │
-│  6. Login with credentials                                  │
+│  6. Click link → Redirect to /onboarding/choose-plan        │
 │                                                             │
-│  7. Access admin dashboard at /app                          │
+│  7. Choose a plan:                                          │
+│     • Free Test (test yourself)                             │
+│     • Pay Per Campaign (pay as you go)                      │
+│     • Annual Plan (25% savings, 4 campaigns)                │
+│                                                             │
+│  8. If Annual selected:                                     │
+│     • Enter estimated employee count                        │
+│     • See calculated price                                  │
+│     • Proceed to Stripe Checkout                            │
+│     • Complete payment                                      │
+│                                                             │
+│  9. Access admin dashboard at /dashboard                    │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 **What the admin sees**:
 - Clean registration form with organization name field
-- Confirmation message after registration
-- Dashboard with campaign overview after login
+- Choose Plan page with 3 options
+- Annual plan shows live price calculation
+- Dashboard with campaign overview after completion
 
 ---
 
@@ -64,14 +76,14 @@ Admins are company representatives who manage AI literacy assessments for their 
 │                                                             │
 │  3. Submit                                                  │
 │                                                             │
-│  4. If valid → Redirect to /app (dashboard)                 │
+│  4. If valid → Redirect to /dashboard                       │
 │     If invalid → Show error message                         │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 **Protected routes**:
-- All `/app/*` routes require authentication
+- All `/dashboard/*` routes require authentication
 - Unauthenticated users are redirected to `/auth/login`
 
 ---
@@ -86,7 +98,7 @@ Admins are company representatives who manage AI literacy assessments for their 
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
 │  1. From dashboard, click "New Campaign"                    │
-│     or navigate to /app/campaigns/new                       │
+│     or navigate to /dashboard/campaigns/new                 │
 │                                                             │
 │  2. Fill campaign form:                                     │
 │     • Campaign Name (required)                              │
@@ -120,34 +132,65 @@ Admins are company representatives who manage AI literacy assessments for their 
 
 ---
 
-### 4. Sending Invites
+### 4. Sending Invites (with Payment)
 
-**Goal**: Send assessment invites to employees.
+**Goal**: Pay for and send assessment invites to employees.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                   SEND INVITES FLOW                         │
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
-│  1. From campaign detail page (/app/campaigns/[id])         │
+│  1. From campaign detail page (/dashboard/campaigns/[id])   │
 │                                                             │
-│  2. See "Send Invites" button with pending count            │
-│     Example: "Send Invites (3 pending)"                     │
+│  2. See "Pay & Send Invites" button with pending count      │
+│     Example: "Pay & Send Invites (3 pending)"               │
 │                                                             │
-│  3. Click button                                            │
+│  3. Click button → Payment dialog opens                     │
 │                                                             │
-│  4. System:                                                 │
+│  4. Dialog shows:                                           │
+│     ┌───────────────────────────────────────────────┐       │
+│     │ Confirm Payment                               │       │
+│     │                                               │       │
+│     │ 3 employees × $2.00 = $6.00                   │       │
+│     │                                               │       │
+│     │ [Cancel]              [Pay & Send Invites]    │       │
+│     └───────────────────────────────────────────────┘       │
+│                                                             │
+│  5. If user has annual subscription with credits:           │
+│     ┌───────────────────────────────────────────────┐       │
+│     │ Use Subscription Credit                       │       │
+│     │                                               │       │
+│     │ You have 3 campaigns remaining                │       │
+│     │ This campaign will be free!                   │       │
+│     │                                               │       │
+│     │ [Cancel]           [Use Subscription]         │       │
+│     └───────────────────────────────────────────────┘       │
+│                                                             │
+│  6. Click "Pay & Send" → Stripe Checkout                    │
+│     (or "Use Subscription" if has credits)                  │
+│                                                             │
+│  7. Complete payment (if applicable)                        │
+│                                                             │
+│  8. System:                                                 │
+│     • Creates payment record                                │
 │     • Generates secure tokens for each participant          │
 │     • Stores token hashes in database                       │
-│     • Sends personalized email to each employee             │
+│     • Sends personalized email via Resend                   │
 │     • Updates campaign status to "active"                   │
 │                                                             │
-│  5. See success toast: "Sent 3 invites"                     │
+│  9. See success toast: "Payment successful! Sent 3 invites" │
 │                                                             │
-│  6. Button updates to "Send Invites (0 pending)"            │
+│  10. Button updates to "Send Invites (0 pending)"           │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
+
+**Pricing**:
+| Employees | Rate |
+|-----------|------|
+| 1-50 | $2.00/employee |
+| 51+ | $1.50/employee |
 
 **Email received by employee**:
 ```
@@ -222,7 +265,7 @@ ScorePrompt
 │  1. From campaign detail page, click "View" on a            │
 │     completed participant                                   │
 │                                                             │
-│  2. Navigate to /app/campaigns/[id]/employees/[pid]         │
+│  2. Navigate to /dashboard/campaigns/[id]/employees/[pid]   │
 │                                                             │
 │  3. See comprehensive results:                              │
 │                                                             │
@@ -257,7 +300,99 @@ ScorePrompt
 
 ---
 
-### 7. Logging Out
+### 7. Billing & Subscription Management
+
+**Goal**: View payment history and manage subscription.
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    BILLING PAGE                             │
+│                  /dashboard/billing                         │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  Summary Cards:                                             │
+│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐            │
+│  │ Total Spent │ │ Total       │ │ Employees   │            │
+│  │   $486.00   │ │ Refunded    │ │ Assessed    │            │
+│  │             │ │   $24.00    │ │    243      │            │
+│  └─────────────┘ └─────────────┘ └─────────────┘            │
+│                                                             │
+│  If has active subscription:                                │
+│  ┌─────────────────────────────────────────────────────┐    │
+│  │ Your Subscription: Team Annual                      │    │
+│  │                                                     │    │
+│  │ Status: Active                                      │    │
+│  │ Renews: December 15, 2024                          │    │
+│  │                                                     │    │
+│  │ Campaign Usage: 2/4 campaigns used                  │    │
+│  │ [████████░░░░░░░░] 50%                              │    │
+│  │                                                     │    │
+│  │ [Cancel subscription]                               │    │
+│  └─────────────────────────────────────────────────────┘    │
+│                                                             │
+│  If no subscription:                                        │
+│  ┌─────────────────────────────────────────────────────┐    │
+│  │ 💡 Save 25% with an annual plan                     │    │
+│  │    Get 4 campaigns per year (pay for 3!)            │    │
+│  │    [View Annual Plans]                              │    │
+│  └─────────────────────────────────────────────────────┘    │
+│                                                             │
+│  Payment History:                                           │
+│  ┌──────────────┬──────────────┬──────┬─────────────────┐   │
+│  │ Date         │ Campaign     │Amount│ Status          │   │
+│  ├──────────────┼──────────────┼──────┼─────────────────┤   │
+│  │ Mar 15, 2024 │ Q1 Assessment│$60.00│ Completed       │   │
+│  │ Mar 10, 2024 │ Test Run     │  —   │ Subscription    │   │
+│  │ Feb 28, 2024 │ Pilot        │$20.00│ Partial Refund  │   │
+│  └──────────────┴──────────────┴──────┴─────────────────┘   │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### 8. Requesting Refunds
+
+**Goal**: Get refund for employees who haven't started.
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    REFUND FLOW                              │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  1. Go to campaign detail page                              │
+│                                                             │
+│  2. If campaign is paid and some employees haven't started: │
+│     See "Request Refund" button                             │
+│                                                             │
+│  3. Click button → Confirmation dialog:                     │
+│     ┌───────────────────────────────────────────────┐       │
+│     │ Request Partial Refund                        │       │
+│     │                                               │       │
+│     │ 5 of 10 employees haven't started yet.        │       │
+│     │ Eligible refund: $10.00                       │       │
+│     │                                               │       │
+│     │ Note: This will remove these employees        │       │
+│     │ from the campaign.                            │       │
+│     │                                               │       │
+│     │ [Cancel]                   [Request Refund]   │       │
+│     └───────────────────────────────────────────────┘       │
+│                                                             │
+│  4. Refund processed via Stripe                             │
+│                                                             │
+│  5. See success toast: "Refund of $10.00 processed"         │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Refund eligibility**:
+- Only for employees who haven't started (status: invited or opened)
+- Uses same pricing tiers as original charge
+- Employees are removed from campaign after refund
+
+---
+
+### 9. Logging Out
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -547,10 +682,11 @@ Employees are the people being assessed. They do NOT have accounts—they access
 
 | Band | Score Range | Description |
 |------|-------------|-------------|
-| Novice | 0-39 | Just starting with AI prompt writing |
-| Developing | 40-59 | Building foundational prompt skills |
-| Proficient | 60-79 | Competent at writing effective prompts |
-| Advanced | 80-100 | Expert-level prompt engineering skills |
+| At Risk | 0-19 | Needs significant improvement in prompt writing |
+| Basic | 20-39 | Just starting with AI prompt writing |
+| Functional | 40-59 | Building foundational prompt skills |
+| Strong | 60-79 | Competent at writing effective prompts |
+| Expert | 80-100 | Expert-level prompt engineering skills |
 
 ---
 
@@ -624,7 +760,8 @@ Employees are the people being assessed. They do NOT have accounts—they access
 |--------|-------|----------|
 | Authentication | Email + Password | Token link only |
 | Account required | Yes | No |
-| Main actions | Create campaigns, send invites, view results | Take assessment, view own feedback |
+| Main actions | Create campaigns, pay, send invites, view results, manage billing | Take assessment, view own feedback |
 | Data access | All employees in organization | Own results only |
-| Routes | /app/* (protected) | /invite/[token]/* (token-validated) |
+| Routes | /dashboard/* (protected) | /invite/[token]/* (token-validated) |
 | Session persistence | Cookie-based | Token-based |
+| Payment | Stripe (one-time or subscription) | None |

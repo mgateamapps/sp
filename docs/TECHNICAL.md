@@ -14,7 +14,8 @@ ScorePrompt is a B2B SaaS platform for assessing employee AI literacy through pr
 | Database | Supabase (PostgreSQL) |
 | Auth | Supabase Auth |
 | Email | Resend |
-| Scoring | Mock scorer (replaceable with OpenAI) |
+| Payments | Stripe (Checkout, Subscriptions, Webhooks) |
+| Scoring | OpenAI GPT-4o-mini (with MockScorer fallback) |
 
 ---
 
@@ -25,12 +26,24 @@ ScorePrompt is a B2B SaaS platform for assessing employee AI literacy through pr
 ```
 sp/
 ├── app/                    # Next.js App Router pages
-│   ├── app/               # Admin dashboard (protected)
+│   ├── api/               # API Routes
+│   │   └── stripe/        # Stripe integration
+│   │       ├── checkout/  # One-time payment sessions
+│   │       ├── subscription/ # Annual subscription sessions
+│   │       ├── refund/    # Partial refunds
+│   │       └── webhook/   # Stripe webhooks handler
+│   ├── dashboard/         # Admin dashboard (protected)
 │   │   ├── campaigns/     # Campaign management
+│   │   ├── billing/       # Subscription & payment history
 │   │   └── ...
 │   ├── auth/              # Authentication pages
 │   │   ├── login/
-│   │   └── register/
+│   │   ├── register/
+│   │   ├── forgot-password/
+│   │   └── reset-password/
+│   ├── onboarding/        # Post-registration flows
+│   │   └── choose-plan/   # Plan selection page
+│   ├── pricing/           # Public pricing page
 │   └── invite/            # Employee-facing (public, token-based)
 │       └── [token]/
 │           ├── assessment/
@@ -40,9 +53,10 @@ sp/
 ├── lib/                   # Business logic
 │   ├── actions/          # Server Actions (mutations)
 │   ├── queries/          # Data fetching functions
-│   ├── scoring/          # Scoring module
-│   ├── email/            # Email service
+│   ├── scoring/          # Scoring module (OpenAI + Mock)
+│   ├── email/            # Email service (Resend)
 │   ├── supabase/         # Supabase clients
+│   ├── utils/            # Utility functions (pricing, etc.)
 │   └── constants/        # Application constants
 ├── types/                 # TypeScript type definitions
 └── supabase/
@@ -212,12 +226,61 @@ Overall assessment results.
 | output_format_score | INT | 0-100 |
 | verification_score | INT | 0-100 |
 | total_score | INT | 0-100 |
-| score_band | TEXT | novice/developing/proficient/advanced |
+| score_band | TEXT | at_risk/basic/functional/strong/expert |
 | strengths_json | JSONB | Top strengths |
 | weaknesses_json | JSONB | Top weaknesses |
 | coaching_tips_json | JSONB | Top tips |
 | summary_feedback | TEXT | Overall narrative |
 | rubric_version | TEXT | Version tracking |
+
+#### `payments`
+Tracks one-time payments for campaigns.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | UUID | Primary key |
+| organization_id | UUID | FK to organizations |
+| campaign_id | UUID | FK to campaigns (nullable) |
+| subscription_id | UUID | FK to subscriptions (nullable) |
+| stripe_checkout_session_id | TEXT | Stripe session ID |
+| stripe_payment_intent_id | TEXT | Stripe payment intent |
+| stripe_refund_id | TEXT | Refund ID if refunded |
+| amount_cents | INT | Amount charged |
+| employee_count | INT | Number of employees |
+| refund_amount_cents | INT | Amount refunded |
+| refund_employee_count | INT | Employees refunded for |
+| status | TEXT | pending/completed/failed/refunded/partially_refunded |
+| is_subscription_campaign | BOOL | Whether used subscription credit |
+| created_at | TIMESTAMPTZ | Creation timestamp |
+| completed_at | TIMESTAMPTZ | Payment completion |
+| refunded_at | TIMESTAMPTZ | Refund timestamp |
+
+**Why this design**: Tracks both one-time campaign payments and subscription-covered campaigns. Supports partial refunds for unstarted assessments.
+
+#### `subscriptions`
+Annual subscription plans for organizations.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | UUID | Primary key |
+| organization_id | UUID | FK to organizations |
+| plan_type | TEXT | team_annual/enterprise_annual |
+| status | TEXT | active/past_due/cancelled/expired |
+| stripe_subscription_id | TEXT | Stripe subscription ID |
+| stripe_customer_id | TEXT | Stripe customer ID |
+| stripe_price_id | TEXT | Stripe price ID |
+| employee_limit | INT | Max employees per campaign |
+| current_period_start | TIMESTAMPTZ | Billing period start |
+| current_period_end | TIMESTAMPTZ | Billing period end |
+| campaigns_used | INT | Campaigns used this period |
+| campaigns_limit | INT | Max campaigns (default: 4) |
+| created_at | TIMESTAMPTZ | Creation timestamp |
+| cancelled_at | TIMESTAMPTZ | Cancellation timestamp |
+
+**Why this design**: 
+- `campaigns_used` tracks usage against `campaigns_limit` (4 per year)
+- Annual plans include 4 campaigns (pay for 3, get 1 free)
+- Resets on subscription renewal via webhook
 
 ---
 
@@ -274,9 +337,10 @@ All tables have RLS enabled with policies ensuring:
 
 ```
 lib/scoring/
-├── types.ts        # Interfaces (ScoringInput, ScoringOutput)
-├── mock-scorer.ts  # MockScorer implements Scorer
-└── index.ts        # scoreAttempt() public API
+├── types.ts          # Interfaces (ScoringInput, ScoringOutput)
+├── openai-scorer.ts  # OpenAIScorer - GPT-4o-mini based scoring
+├── mock-scorer.ts    # MockScorer - keyword-based fallback
+└── index.ts          # scoreAttempt() public API
 ```
 
 ### Scorer Interface
@@ -287,20 +351,60 @@ interface Scorer {
 }
 ```
 
-**Why interface**: Easy to swap MockScorer with OpenAIScorer later without changing calling code.
+### Scorer Selection
 
-### Mock Scoring Algorithm
-
-Deterministic scoring based on text analysis:
-
-#### Per-Criterion Score (0-20)
+The system automatically selects the appropriate scorer:
 
 ```typescript
-score = min(signalScore + lengthScore, 20)
+function createScorer(): Scorer {
+  if (process.env.OPENAI_API_KEY) {
+    try {
+      return new OpenAIScorer();
+    } catch (e) {
+      console.warn('Failed to initialize OpenAI scorer, falling back to mock:', e);
+      return new MockScorer();
+    }
+  }
+  return new MockScorer();
+}
 ```
 
-**Signal Score (0-12)**:
-Count matching keywords and multiply by 3.
+### OpenAI Scorer (Primary)
+
+Uses GPT-4o-mini with structured JSON output:
+
+```typescript
+export class OpenAIScorer implements Scorer {
+  async score(input: ScoringInput): Promise<ScoringOutput> {
+    // For each scenario:
+    // 1. Send prompt + response to GPT-4o-mini
+    // 2. Request JSON response with scores 0-20 per criterion
+    // 3. Parse and validate response
+    // 4. Aggregate into assessment score
+  }
+}
+```
+
+**Evaluation Criteria** (each 0-20):
+
+| Criterion | What GPT Evaluates |
+|-----------|-------------------|
+| Clarity | How clearly the prompt communicates what is needed |
+| Context | Whether relevant background information is provided |
+| Constraints | Presence of limitations, requirements, boundaries |
+| Output Format | Definition of expected format/structure |
+| Verification | Inclusion of validation/verification criteria |
+
+**Response includes**:
+- Per-criterion scores (0-20)
+- Strengths and weaknesses
+- Coaching tips
+- Improved prompt example
+- Summary feedback
+
+### Mock Scorer (Fallback)
+
+Deterministic keyword-based scoring when OpenAI is unavailable:
 
 | Criterion | Sample Keywords |
 |-----------|-----------------|
@@ -310,19 +414,15 @@ Count matching keywords and multiply by 3.
 | Output Format | "format", "list", "table", "step by step" |
 | Verification | "verify", "check", "ensure", "quality" |
 
-**Length Score (0-8)**:
-Based on response length:
-- <20 chars: 1.6
-- <50 chars: 3.2
-- <100 chars: 4.8
-- <200 chars: 6.4
-- ≥200 chars: 8.0
+### Score Bands
 
-#### Scenario Score (0-100)
-Sum of 5 criterion scores.
-
-#### Total Score (0-100)
-Average of normalized criterion scores across all scenarios.
+| Band | Score Range | Description |
+|------|-------------|-------------|
+| at_risk | 0-19 | Needs significant improvement |
+| basic | 20-39 | Just starting with AI prompts |
+| functional | 40-59 | Building foundational skills |
+| strong | 60-79 | Competent prompt writing |
+| expert | 80-100 | Expert-level skills |
 
 ### Idempotency
 
@@ -460,25 +560,131 @@ Redirect to feedback
 
 ---
 
-## Future Considerations
+## Payment System
 
-### OpenAI Integration
+### Pricing Model
 
-Replace MockScorer:
+**Monthly (Pay-per-campaign)**:
+| Tier | Rate | Employees |
+|------|------|-----------|
+| Standard | $2.00/employee | 1-50 |
+| Enterprise | $1.50/employee | 51+ |
+
+**Annual Plans** (25% savings):
+| Plan | Rate | Employees | Included |
+|------|------|-----------|----------|
+| Team Annual | $6.00/employee/year | 1-50 | 4 campaigns |
+| Enterprise Annual | $4.50/employee/year | 51+ | 4 campaigns |
+
+### Stripe Integration
+
+```
+lib/
+├── stripe.ts           # Stripe client initialization
+└── utils/
+    └── pricing.ts      # Price calculation utilities
+
+app/api/stripe/
+├── checkout/route.ts   # One-time payment sessions
+├── subscription/route.ts # Annual subscription sessions
+├── subscription/cancel/route.ts # Cancel subscription
+├── refund/route.ts     # Partial refunds
+└── webhook/route.ts    # Stripe event handler
+```
+
+### Payment Flow (Pay-per-campaign)
+
+```
+Admin clicks "Send Invites"
+         │
+         ▼
+   Payment Dialog
+   (shows price breakdown)
+         │
+         ▼
+Stripe Checkout Session
+         │
+         ▼
+   Stripe Payment
+         │
+         ▼
+Webhook: checkout.session.completed
+         │
+         ▼
+Create payment record
+Mark campaign as paid
+         │
+         ▼
+Redirect to campaign
+Send invites
+```
+
+### Subscription Flow (Annual Plan)
+
+```
+New user registers
+         │
+         ▼
+Redirect to /onboarding/choose-plan
+         │
+         ▼
+Select Annual Plan
+Enter employee count
+         │
+         ▼
+Stripe Subscription Checkout
+         │
+         ▼
+Webhook: customer.subscription.created
+         │
+         ▼
+Create subscription record
+         │
+         ▼
+Dashboard access
+```
+
+### Subscription Credits
+
+Annual subscribers get 4 campaigns included:
 
 ```typescript
-// lib/scoring/openai-scorer.ts
-export class OpenAIScorer implements Scorer {
-  async score(input: ScoringInput): Promise<ScoringOutput> {
-    // Call OpenAI API
-    // Parse structured response
-    // Return in same format as MockScorer
-  }
+// When sending invites with subscription:
+if (subscription && subscription.campaigns_used < subscription.campaigns_limit) {
+  // Use subscription credit instead of charging
+  await incrementCampaignsUsed(subscription.id);
+  // Create free payment record
+  await createSubscriptionPayment(campaignId, employeeCount);
 }
-
-// lib/scoring/index.ts
-const scorer: Scorer = new OpenAIScorer(); // Just change this line
 ```
+
+### Refund Policy
+
+Partial refunds for employees who haven't started:
+
+```typescript
+const refundAmount = calculateRefundAmount(
+  originalEmployeeCount,
+  eligibleForRefundCount
+);
+// Uses same tiered pricing as original charge
+```
+
+### Webhook Events
+
+| Event | Handler |
+|-------|---------|
+| checkout.session.completed | Create payment record, mark campaign paid |
+| checkout.session.expired | Log expiration |
+| customer.subscription.created | Create subscription record |
+| customer.subscription.updated | Update subscription status |
+| customer.subscription.deleted | Mark subscription expired |
+| invoice.paid | Reset campaigns_used on renewal |
+| invoice.payment_failed | Mark subscription past_due |
+
+---
+
+## Future Considerations
 
 ### Background Jobs
 
@@ -493,3 +699,10 @@ Current RLS policies support multi-tenancy. For scale:
 - Add connection pooling
 - Consider read replicas
 - Add caching layer for scores
+
+### Domain Verification
+
+For production email deliverability:
+1. Add domain to Resend dashboard
+2. Configure DNS records (SPF, DKIM)
+3. Update from address in email templates
