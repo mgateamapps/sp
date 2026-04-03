@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { createHash } from 'crypto';
 import type { Campaign, CampaignParticipant, Employee } from '@/types';
 
@@ -20,7 +20,7 @@ export function generateToken(): string {
 export async function getParticipantByTokenHash(
   tokenHash: string
 ): Promise<ParticipantWithDetails | null> {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const { data, error } = await supabase
     .from('campaign_participants')
@@ -49,7 +49,7 @@ export async function validateInviteToken(
 export async function markParticipantOpened(
   participantId: string
 ): Promise<boolean> {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const { error } = await supabase
     .from('campaign_participants')

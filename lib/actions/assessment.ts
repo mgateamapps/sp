@@ -1,6 +1,7 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { validateInviteToken } from '@/lib/queries/invites';
 import type { ScenarioKey, AssessmentAttempt } from '@/types';
 import { SCENARIOS } from '@/lib/constants/assessment';
 
@@ -9,7 +10,7 @@ const REQUIRED_SCENARIOS: ScenarioKey[] = SCENARIOS.map((s) => s.key);
 export async function getOrCreateAttempt(
   participantId: string
 ): Promise<{ attempt: AssessmentAttempt | null; error: string | null }> {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const { data: existing } = await supabase
     .from('assessment_attempts')
@@ -52,11 +53,27 @@ export async function getOrCreateAttempt(
 }
 
 export async function saveResponse(
+  token: string,
   attemptId: string,
   scenarioKey: ScenarioKey,
   responseText: string
 ): Promise<{ success: boolean; error: string | null }> {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
+  const participant = await validateInviteToken(token);
+
+  if (!participant) {
+    return { success: false, error: 'Invalid invite token' };
+  }
+
+  const { data: attempt, error: attemptError } = await supabase
+    .from('assessment_attempts')
+    .select('campaign_participant_id')
+    .eq('id', attemptId)
+    .single();
+
+  if (attemptError || !attempt || attempt.campaign_participant_id !== participant.id) {
+    return { success: false, error: 'Unauthorized attempt access' };
+  }
 
   const { error } = await supabase.from('assessment_responses').upsert(
     {
@@ -79,9 +96,15 @@ export async function saveResponse(
 }
 
 export async function submitAssessment(
+  token: string,
   attemptId: string
 ): Promise<{ success: boolean; error: string | null }> {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
+  const participant = await validateInviteToken(token);
+
+  if (!participant) {
+    return { success: false, error: 'Invalid invite token' };
+  }
 
   const { data: responses, error: fetchError } = await supabase
     .from('assessment_responses')
@@ -116,7 +139,7 @@ export async function submitAssessment(
     .eq('id', attemptId)
     .single();
 
-  if (attemptFetchError || !attempt) {
+  if (attemptFetchError || !attempt || attempt.campaign_participant_id !== participant.id) {
     return { success: false, error: 'Failed to find attempt' };
   }
 

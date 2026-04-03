@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import type { ScenarioKey, ScoreBand } from '@/types';
 
 export interface ScenarioScoreRecord {
@@ -52,7 +52,7 @@ export interface FullAssessmentResult {
 export async function getAssessmentScoreByAttemptId(
   attemptId: string
 ): Promise<AssessmentScoreRecord | null> {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const { data, error } = await supabase
     .from('assessment_scores')
@@ -68,7 +68,7 @@ export async function getAssessmentScoreByAttemptId(
 export async function getScenarioScoresByAttemptId(
   attemptId: string
 ): Promise<ScenarioScoreRecord[]> {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const { data, error } = await supabase
     .from('scenario_scores')
@@ -84,7 +84,7 @@ export async function getScenarioScoresByAttemptId(
 export async function getFullAssessmentResult(
   attemptId: string
 ): Promise<FullAssessmentResult | null> {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const { data: assessmentScore, error: scoreError } = await supabase
     .from('assessment_scores')
@@ -118,7 +118,7 @@ export async function getFullAssessmentResult(
 export async function getAssessmentScoreByParticipantId(
   participantId: string
 ): Promise<AssessmentScoreRecord | null> {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const { data: attempt } = await supabase
     .from('assessment_attempts')
@@ -134,7 +134,7 @@ export async function getAssessmentScoreByParticipantId(
 export async function getFullAssessmentResultByParticipantId(
   participantId: string
 ): Promise<FullAssessmentResult | null> {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const { data: attempt } = await supabase
     .from('assessment_attempts')

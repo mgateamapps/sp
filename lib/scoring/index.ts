@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { MockScorer } from './mock-scorer';
 import { OpenAIScorer } from './openai-scorer';
 import { RUBRIC_VERSION } from './types';
@@ -27,7 +27,7 @@ export interface ScoreAttemptResult {
 export async function scoreAttempt(
   attemptId: string
 ): Promise<ScoreAttemptResult> {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const { data: attempt, error: attemptError } = await supabase
     .from('assessment_attempts')

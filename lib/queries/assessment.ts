@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import type { AssessmentAttempt, AssessmentResponse, ScenarioKey } from '@/types';
 
 export interface AttemptWithResponses extends AssessmentAttempt {
@@ -8,7 +8,7 @@ export interface AttemptWithResponses extends AssessmentAttempt {
 export async function getAttemptByParticipantId(
   participantId: string
 ): Promise<AssessmentAttempt | null> {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const { data, error } = await supabase
     .from('assessment_attempts')
@@ -24,7 +24,7 @@ export async function getAttemptByParticipantId(
 export async function getAttemptWithResponses(
   participantId: string
 ): Promise<AttemptWithResponses | null> {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const { data: attempt, error: attemptError } = await supabase
     .from('assessment_attempts')
@@ -55,7 +55,7 @@ export async function getAttemptWithResponses(
 export async function getResponsesForAttempt(
   attemptId: string
 ): Promise<AssessmentResponse[]> {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const { data, error } = await supabase
     .from('assessment_responses')

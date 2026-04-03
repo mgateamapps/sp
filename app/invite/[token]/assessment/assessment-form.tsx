@@ -49,7 +49,7 @@ export function AssessmentForm({
     if (!text) return true;
 
     setIsSaving(true);
-    const result = await saveResponse(attemptId, currentScenario.key, text);
+    const result = await saveResponse(token, attemptId, currentScenario.key, text);
     setIsSaving(false);
 
     if (!result.success) {
@@ -78,7 +78,7 @@ export function AssessmentForm({
     if (!saved) return;
 
     startTransition(async () => {
-      const result = await submitAssessment(attemptId);
+      const result = await submitAssessment(token, attemptId);
 
       if (!result.success) {
         toast.error(result.error || 'Failed to submit assessment');
