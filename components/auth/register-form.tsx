@@ -190,14 +190,14 @@ const RegisterForm = () => {
                   <label htmlFor="createAccount" className="text-sm">
                     By creating an account means you agree to the{" "}
                     <Link
-                      href="#"
+                      href="/terms"
                       className="text-primary font-semibold hover:underline"
                     >
                       Terms & Conditions
                     </Link>{" "}
                     and our{" "}
                     <Link
-                      href="#"
+                      href="/privacy"
                       className="text-primary font-semibold hover:underline"
                     >
                       Privacy Policy

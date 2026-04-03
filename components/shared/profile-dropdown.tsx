@@ -9,7 +9,7 @@ import {
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import userImg from "@/public/assets/images/user.png";
-import { LogOut, Settings, User } from "lucide-react";
+import { LogOut, Settings } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -83,14 +83,6 @@ const ProfileDropdown = () => {
 
         <div className="max-h-[400px] overflow-y-auto scroll-sm pt-4">
           <ul className="flex flex-col gap-3">
-            <li>
-              <Link
-                href="/dashboard/settings"
-                className="text-black dark:text-white hover:text-primary dark:hover:text-primary flex items-center gap-3"
-              >
-                <User className="w-5 h-5" /> My Profile
-              </Link>
-            </li>
             <li>
               <Link
                 href="/dashboard/settings"

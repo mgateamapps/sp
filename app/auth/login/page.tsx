@@ -73,15 +73,12 @@ export default function LoginPage() {
               <Image
                 src="/assets/images/logo.png"
                 alt="ScorePrompt"
-                width={120}
+                width={150}
                 height={28}
                 priority
               />
             </Link>
 
-            <h1 className="text-2xl font-semibold mb-2 text-heading dark:text-white">
-              Welcome back
-            </h1>
             <p className="text-neutral-500 dark:text-neutral-400">
               Log in to access your team's AI literacy assessments, campaign results, and company insights.
             </p>

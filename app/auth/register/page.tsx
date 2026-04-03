@@ -59,17 +59,31 @@ export default function RegisterPage() {
           <div className="mb-8 text-center">
             <Link href="/" className="inline-block mb-6">
               <Image
-                src="/assets/images/logo.png"
+                src="/assets/images/logo_image.png"
                 alt="ScorePrompt"
                 width={120}
                 height={28}
                 priority
               />
             </Link>
-
-            <h1 className="text-2xl font-semibold mb-2 text-heading dark:text-white">
-              Create your ScorePrompt account
+            <div className="flex items-center justify-center gap-2 mb-4">
+             <h1 className="text-2xl font-semibold text-heading dark:text-white text-center">
+              Create your 
             </h1>
+              <Image
+                src="/assets/images/logo_text.png"
+                alt="ScorePrompt"
+                width={150}
+                height={32}
+                priority
+                className="mt-1"
+              />
+                    <h1 className="text-2xl font-semibold text-heading dark:text-white">
+                  account
+            </h1>
+            </div>
+
+      
             <p className="text-neutral-500 dark:text-neutral-400">
               Set up your company workspace and start measuring AI prompt-writing capability across your team.
             </p>
