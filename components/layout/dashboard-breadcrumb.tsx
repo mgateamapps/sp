@@ -21,7 +21,7 @@ const DashboardBreadcrumb = ({ title, text }: BreadcrumbData) => {
             <Breadcrumb>
                 <BreadcrumbList>
                     <BreadcrumbItem className="">
-                        <BreadcrumbLink href='/' className='flex items-center gap-2 font-medium text-base text-neutral-600 hover:text-primary dark:text-white dark:hover:text-primary'>
+                        <BreadcrumbLink href='/dashboard' className='flex items-center gap-2 font-medium text-base text-neutral-600 hover:text-primary dark:text-white dark:hover:text-primary'>
                             <House size={16} />
                             Dashboard
                         </BreadcrumbLink>

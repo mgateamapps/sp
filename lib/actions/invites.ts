@@ -21,12 +21,22 @@ export async function sendCampaignInvites(campaignId: string): Promise<SendInvit
     return { success: false, sent: 0, failed: 0, error: 'Not authenticated' };
   }
 
-  const { data: campaign, error: campaignError } = await supabase
-    .from('campaigns')
-    .select('*')
-    .eq('id', campaignId)
-    .eq('organization_id', admin.organization_id)
-    .single();
+  const [campaignResult, orgResult] = await Promise.all([
+    supabase
+      .from('campaigns')
+      .select('*')
+      .eq('id', campaignId)
+      .eq('organization_id', admin.organization_id)
+      .single(),
+    supabase
+      .from('organizations')
+      .select('name, invite_message, invite_reply_to')
+      .eq('id', admin.organization_id)
+      .single(),
+  ]);
+
+  const { data: campaign, error: campaignError } = campaignResult;
+  const organization = orgResult.data;
 
   if (campaignError || !campaign) {
     return { success: false, sent: 0, failed: 0, error: 'Campaign not found' };
@@ -90,6 +100,9 @@ export async function sendCampaignInvites(campaignId: string): Promise<SendInvit
       campaignName: campaign.name,
       inviteUrl,
       deadline: campaign.deadline,
+      customMessage: organization?.invite_message ?? null,
+      replyTo: organization?.invite_reply_to ?? null,
+      organizationName: organization?.name ?? null,
     });
 
     if (emailResult.success) {

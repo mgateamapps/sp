@@ -27,132 +27,129 @@ export function SubscriptionCard({ subscription }: SubscriptionCardProps) {
   const router = useRouter();
 
   const remainingCampaigns = subscription.campaigns_limit - subscription.campaigns_used;
+  const usedPct = Math.round((subscription.campaigns_used / subscription.campaigns_limit) * 100);
   const periodEnd = new Date(subscription.current_period_end);
   const isCancelled = subscription.cancelled_at !== null;
+  const planName = subscription.plan_type === 'team_annual' ? 'Team Annual' : 'Enterprise Annual';
 
   async function handleCancel() {
     setIsCancelling(true);
-
     try {
-      const response = await fetch('/api/stripe/subscription/cancel', {
-        method: 'POST',
-      });
-
+      const response = await fetch('/api/stripe/subscription/cancel', { method: 'POST' });
       const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to cancel subscription');
-      }
-
+      if (!response.ok) throw new Error(data.error || 'Failed to cancel subscription');
       toast.success('Subscription will be cancelled at the end of the billing period');
       setShowCancelDialog(false);
       router.refresh();
     } catch (error) {
-      console.error('Cancel error:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to cancel subscription');
     } finally {
       setIsCancelling(false);
     }
   }
 
-  const planName = subscription.plan_type === 'team_annual' ? 'Team Annual' : 'Enterprise Annual';
-
   return (
-    <div className="rounded-lg border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-secondary/5 dark:from-primary/10 dark:to-secondary/10 p-6 mb-6">
-      <div className="flex items-start justify-between">
-        <div className="flex items-start gap-4">
-          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-            <Sparkles className="w-6 h-6 text-primary" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <h3 className="font-semibold">{planName}</h3>
-              {isCancelled ? (
-                <Badge variant="secondary">Cancels {periodEnd.toLocaleDateString()}</Badge>
-              ) : (
-                <Badge variant="default">Active</Badge>
-              )}
-            </div>
-            <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
-              {subscription.employee_limit} employees • Renews {periodEnd.toLocaleDateString()}
-            </p>
+    <div className="rounded-xl border border-primary/20 bg-white dark:bg-neutral-900 overflow-hidden mb-6">
+      {/* Top accent */}
+      <div className="h-1 w-full bg-gradient-to-r from-primary to-secondary" />
 
-            {/* Campaign Usage */}
-            <div className="flex items-center gap-6">
-              <div className="flex items-center gap-2">
-                <Zap className="w-4 h-4 text-primary" />
-                <span className="text-sm">
-                  <span className="font-semibold">{remainingCampaigns}</span> of {subscription.campaigns_limit} campaigns remaining
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-neutral-400" />
-                <span className="text-sm text-neutral-500">
-                  Resets {periodEnd.toLocaleDateString()}
-                </span>
-              </div>
+      <div className="p-6">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-start gap-4">
+            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+              <Sparkles className="w-5 h-5 text-primary" />
             </div>
-
-            {/* Progress bar */}
-            <div className="mt-3 w-64">
-              <div className="h-2 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-primary rounded-full transition-all"
-                  style={{ width: `${(subscription.campaigns_used / subscription.campaigns_limit) * 100}%` }}
-                />
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <h3 className="font-semibold text-neutral-900 dark:text-white">{planName}</h3>
+                {isCancelled ? (
+                  <Badge variant="secondary">Cancels {periodEnd.toLocaleDateString()}</Badge>
+                ) : (
+                  <Badge variant="default">Active</Badge>
+                )}
               </div>
-              <p className="text-xs text-neutral-500 mt-1">
-                {subscription.campaigns_used} used
+              <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                Up to {subscription.employee_limit} employees
               </p>
             </div>
           </div>
+
+          {!isCancelled && (
+            <Dialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm" className="shrink-0">Cancel plan</Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2">
+                    <AlertCircle className="w-5 h-5 text-amber-500" />
+                    Cancel subscription?
+                  </DialogTitle>
+                  <DialogDescription>
+                    Your subscription stays active until {periodEnd.toLocaleDateString()}. After that, you'll pay per campaign at standard rates.
+                    {remainingCampaigns > 0 && (
+                      <span className="block mt-2 text-amber-600 dark:text-amber-400">
+                        You still have {remainingCampaigns} campaign{remainingCampaigns === 1 ? '' : 's'} remaining.
+                      </span>
+                    )}
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setShowCancelDialog(false)}>Keep plan</Button>
+                  <Button variant="destructive" onClick={handleCancel} disabled={isCancelling}>
+                    {isCancelling ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Cancelling...</> : 'Yes, cancel'}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          )}
         </div>
 
-        {!isCancelled && (
-          <Dialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
-            <DialogTrigger asChild>
-              <Button variant="outline" size="sm">
-                Cancel subscription
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle className="flex items-center gap-2">
-                  <AlertCircle className="w-5 h-5 text-amber-500" />
-                  Cancel subscription?
-                </DialogTitle>
-                <DialogDescription>
-                  Your subscription will remain active until {periodEnd.toLocaleDateString()}. 
-                  After that, you&apos;ll need to pay per campaign at standard rates.
-                  {remainingCampaigns > 0 && (
-                    <span className="block mt-2 text-amber-600 dark:text-amber-400">
-                      You still have {remainingCampaigns} campaign{remainingCampaigns === 1 ? '' : 's'} remaining in your plan.
-                    </span>
-                  )}
-                </DialogDescription>
-              </DialogHeader>
-              <DialogFooter className="flex gap-2 sm:gap-0">
-                <Button variant="outline" onClick={() => setShowCancelDialog(false)}>
-                  Keep subscription
-                </Button>
-                <Button
-                  onClick={handleCancel}
-                  disabled={isCancelling}
-                  variant="destructive"
-                >
-                  {isCancelling ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Cancelling...
-                    </>
-                  ) : (
-                    'Yes, cancel'
-                  )}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        )}
+        {/* Stats row */}
+        <div className="grid grid-cols-3 gap-4 mt-6">
+          <div className="rounded-lg bg-neutral-50 dark:bg-neutral-800 p-4">
+            <div className="flex items-center gap-2 mb-1">
+              <Zap className="w-3.5 h-3.5 text-primary" />
+              <span className="text-xs text-neutral-500">Campaigns used</span>
+            </div>
+            <p className="text-xl font-bold text-neutral-900 dark:text-white">
+              {subscription.campaigns_used}
+              <span className="text-sm font-normal text-neutral-400"> / {subscription.campaigns_limit}</span>
+            </p>
+          </div>
+
+          <div className="rounded-lg bg-neutral-50 dark:bg-neutral-800 p-4">
+            <div className="flex items-center gap-2 mb-1">
+              <Zap className="w-3.5 h-3.5 text-green-500" />
+              <span className="text-xs text-neutral-500">Remaining</span>
+            </div>
+            <p className="text-xl font-bold text-neutral-900 dark:text-white">{remainingCampaigns}</p>
+          </div>
+
+          <div className="rounded-lg bg-neutral-50 dark:bg-neutral-800 p-4">
+            <div className="flex items-center gap-2 mb-1">
+              <Calendar className="w-3.5 h-3.5 text-neutral-400" />
+              <span className="text-xs text-neutral-500">Renews</span>
+            </div>
+            <p className="text-sm font-semibold text-neutral-900 dark:text-white">
+              {periodEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+            </p>
+          </div>
+        </div>
+
+        {/* Progress bar */}
+        <div className="mt-4">
+          <div className="flex justify-between text-xs text-neutral-400 mb-1.5">
+            <span>Campaign usage</span>
+            <span>{usedPct}%</span>
+          </div>
+          <div className="h-2 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-primary to-secondary rounded-full transition-all"
+              style={{ width: `${usedPct}%` }}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -1,4 +1,5 @@
 import { ClientRoot } from "@/app/client-root";
+import { createClient } from "@/lib/supabase/server";
 import { cookies } from "next/headers";
 
 export default async function AppLayout({
@@ -10,8 +11,31 @@ export default async function AppLayout({
     const cookieStore = await cookies();
     const defaultOpen = cookieStore.get("sidebar_state")?.value === "true";
 
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    let avatarUrl: string | null = null;
+    if (user) {
+      const { data: profile } = await supabase
+        .from('admin_profiles')
+        .select('organization_id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (profile?.organization_id) {
+        const { data: org } = await supabase
+          .from('organizations')
+          .select('logo_url')
+          .eq('id', profile.organization_id)
+          .single();
+        avatarUrl = org?.logo_url ?? null;
+      }
+    }
+
     return (
-      <ClientRoot defaultOpen={defaultOpen}>{children}</ClientRoot>
+      <ClientRoot defaultOpen={defaultOpen} avatarUrl={avatarUrl}>
+        {children}
+      </ClientRoot>
     );
   } catch (error) {
     return (

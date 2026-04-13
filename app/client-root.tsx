@@ -10,9 +10,11 @@ import { Toaster } from "react-hot-toast";
 
 export function ClientRoot({
   defaultOpen,
+  avatarUrl,
   children,
 }: {
   defaultOpen: boolean;
+  avatarUrl: string | null;
   children: ReactNode;
 }) {
   return (
@@ -26,7 +28,7 @@ export function ClientRoot({
         <AppSidebar />
         <main className="dashboard-body-wrapper grow-[1] flex flex-col">
           <SidebarInset>
-            <Header />
+            <Header avatarUrl={avatarUrl} />
           </SidebarInset>
           <div className="dashboard-body bg-neutral-100 dark:bg-[#1e2734] md:p-6 p-4 flex-1">
             {children}

@@ -1,45 +1,17 @@
 import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { getCurrentAdminProfile } from "@/lib/queries/admin";
 import { getCampaignsForOrganization } from "@/lib/queries/campaigns";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Plus, Users } from "lucide-react";
 import { redirect } from "next/navigation";
+import CampaignsTable from "./campaigns-table";
 
 export const metadata: Metadata = {
   title: "Campaigns | ScorePrompt",
   description: "Manage your assessment campaigns",
 };
-
-function getStatusBadgeVariant(status: string): "default" | "secondary" | "outline" {
-  switch (status) {
-    case 'active':
-      return 'default';
-    case 'closed':
-      return 'secondary';
-    default:
-      return 'outline';
-  }
-}
-
-function formatDate(dateString: string | null): string {
-  if (!dateString) return '—';
-  return new Date(dateString).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
-}
 
 export default async function CampaignsPage() {
   const admin = await getCurrentAdminProfile();
@@ -80,64 +52,7 @@ export default async function CampaignsPage() {
         </div>
       ) : (
         <div className="rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Campaign</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Deadline</TableHead>
-                <TableHead className="text-center">Invited</TableHead>
-                <TableHead className="text-center">Completed</TableHead>
-                <TableHead className="text-center">Rate</TableHead>
-                <TableHead>Created</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {campaigns.map((campaign) => {
-                const completionRate = campaign.participant_count > 0
-                  ? Math.round((campaign.completed_count / campaign.participant_count) * 100)
-                  : 0;
-
-                return (
-                  <TableRow key={campaign.id}>
-                    <TableCell>
-                      <Link 
-                        href={`/dashboard/campaigns/${campaign.id}`}
-                        className="font-medium hover:text-primary hover:underline"
-                      >
-                        {campaign.name}
-                      </Link>
-                      {campaign.description && (
-                        <p className="text-sm text-neutral-500 dark:text-neutral-400 truncate max-w-xs">
-                          {campaign.description}
-                        </p>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={getStatusBadgeVariant(campaign.status)}>
-                        {campaign.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-neutral-600 dark:text-neutral-400">
-                      {formatDate(campaign.deadline)}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      {campaign.participant_count}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      {campaign.completed_count}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      {completionRate}%
-                    </TableCell>
-                    <TableCell className="text-neutral-600 dark:text-neutral-400">
-                      {formatDate(campaign.created_at)}
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+          <CampaignsTable campaigns={campaigns} />
         </div>
       )}
     </>

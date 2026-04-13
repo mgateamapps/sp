@@ -1,4 +1,3 @@
-import { LoadingProvider } from "@/contexts/LoadingContext";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
@@ -33,9 +32,7 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.className} antialiased`}>
-        <LoadingProvider>
-          {children}
-        </LoadingProvider>
+        {children}
       </body>
     </html>
   );

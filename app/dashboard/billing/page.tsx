@@ -13,7 +13,7 @@ import { getActiveSubscription } from "@/lib/queries/subscriptions";
 import { createClient } from "@/lib/supabase/server";
 import { formatPrice, PRICING, ANNUAL_PRICING } from "@/lib/utils/pricing";
 import type { Metadata } from "next";
-import { CreditCard, Receipt, RefreshCcw, Sparkles, Calendar, Zap } from "lucide-react";
+import { CreditCard, Receipt, RefreshCcw, Sparkles, Users, TrendingDown, ArrowUpRight } from "lucide-react";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { SubscriptionCard } from "./subscription-card";
@@ -55,7 +55,6 @@ export default async function BillingPage() {
 
   const supabase = await createClient();
 
-  // Fetch subscription and payments in parallel
   const [subscription, paymentsResult] = await Promise.all([
     getActiveSubscription(admin.organization_id),
     supabase
@@ -82,13 +81,9 @@ export default async function BillingPage() {
   const paymentList = (payments || []).map(p => {
     const campaignData = p.campaign as { name: string } | { name: string }[] | null;
     const campaign = Array.isArray(campaignData) ? campaignData[0] : campaignData;
-    return {
-      ...p,
-      campaign,
-    };
+    return { ...p, campaign };
   });
 
-  // Calculate totals
   const totalSpent = paymentList
     .filter(p => p.status === 'completed' || p.status === 'partially_refunded')
     .reduce((sum, p) => sum + p.amount_cents, 0);
@@ -104,159 +99,204 @@ export default async function BillingPage() {
     <>
       <DashboardBreadcrumb title="Billing" text="Billing" />
 
-      {/* Active Subscription */}
-      {subscription && (
+      {/* Subscription */}
+      {subscription ? (
         <SubscriptionCard subscription={subscription} />
-      )}
-
-      {/* No subscription - show upgrade CTA */}
-      {!subscription && (
-        <div className="rounded-lg border-2 border-dashed border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900 p-6 mb-6">
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-              <Sparkles className="w-6 h-6 text-primary" />
+      ) : (
+        <div className="rounded-xl border border-dashed border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900/50 p-6 mb-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                <Sparkles className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-neutral-900 dark:text-white">No active subscription</h3>
+                <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
+                  Save 25% with an annual plan — 4 campaigns for the price of 3.
+                </p>
+              </div>
             </div>
-            <div className="flex-1">
-              <h3 className="font-semibold mb-1">Save 25% with an annual plan</h3>
-              <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
-                Get 4 campaigns per year for the price of 3. Perfect for teams running regular assessments.
-              </p>
-              <Link 
-                href="/pricing" 
-                className="text-sm font-medium text-primary hover:underline"
-              >
-                View annual plans →
-              </Link>
-            </div>
+            <Link
+              href="/pricing"
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline shrink-0"
+            >
+              View plans
+              <ArrowUpRight className="w-4 h-4" />
+            </Link>
           </div>
         </div>
       )}
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-6">
-          <div className="flex items-center gap-3 mb-2">
-            <CreditCard className="w-5 h-5 text-primary" />
-            <h3 className="font-medium text-neutral-500">Total Spent</h3>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div className="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-5">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-sm text-neutral-500 dark:text-neutral-400">Total spent</span>
+            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+              <CreditCard className="w-4 h-4 text-primary" />
+            </div>
           </div>
-          <p className="text-2xl font-bold">{formatPrice(totalSpent)}</p>
+          <p className="text-2xl font-bold text-neutral-900 dark:text-white">{formatPrice(totalSpent)}</p>
+          <p className="text-xs text-neutral-400 mt-1">{paymentList.filter(p => p.status === 'completed' || p.status === 'partially_refunded').length} payments</p>
         </div>
-        <div className="rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-6">
-          <div className="flex items-center gap-3 mb-2">
-            <RefreshCcw className="w-5 h-5 text-green-500" />
-            <h3 className="font-medium text-neutral-500">Total Refunded</h3>
+
+        <div className="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-5">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-sm text-neutral-500 dark:text-neutral-400">Total refunded</span>
+            <div className="w-8 h-8 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+              <TrendingDown className="w-4 h-4 text-green-600 dark:text-green-400" />
+            </div>
           </div>
-          <p className="text-2xl font-bold">{formatPrice(totalRefunded)}</p>
+          <p className="text-2xl font-bold text-neutral-900 dark:text-white">{formatPrice(totalRefunded)}</p>
+          <p className="text-xs text-neutral-400 mt-1">{paymentList.filter(p => (p.refund_amount_cents || 0) > 0).length} refunds</p>
         </div>
-        <div className="rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-6">
-          <div className="flex items-center gap-3 mb-2">
-            <Receipt className="w-5 h-5 text-blue-500" />
-            <h3 className="font-medium text-neutral-500">Employees Assessed</h3>
+
+        <div className="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-5">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-sm text-neutral-500 dark:text-neutral-400">Employees assessed</span>
+            <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+              <Users className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+            </div>
           </div>
-          <p className="text-2xl font-bold">{totalEmployees}</p>
+          <p className="text-2xl font-bold text-neutral-900 dark:text-white">{totalEmployees}</p>
+          <p className="text-xs text-neutral-400 mt-1">across all campaigns</p>
         </div>
       </div>
 
-      {/* Pricing Info */}
-      <div className="rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-6 mb-6">
-        <h2 className="text-lg font-semibold mb-4">Pricing</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="p-4 rounded-lg bg-neutral-50 dark:bg-neutral-800">
-            <h3 className="font-medium mb-1 text-sm text-neutral-500">Team (monthly)</h3>
-            <p className="text-xl font-bold text-primary">{formatPrice(PRICING.TIER_1_RATE_CENTS)}</p>
-            <p className="text-xs text-neutral-500">per employee / campaign</p>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Payment History */}
+        <div className="lg:col-span-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 overflow-hidden">
+          <div className="px-6 py-4 border-b border-neutral-200 dark:border-neutral-700">
+            <h2 className="text-base font-semibold text-neutral-900 dark:text-white">Payment history</h2>
           </div>
-          <div className="p-4 rounded-lg bg-neutral-50 dark:bg-neutral-800">
-            <h3 className="font-medium mb-1 text-sm text-neutral-500">Enterprise (monthly)</h3>
-            <p className="text-xl font-bold text-primary">{formatPrice(PRICING.TIER_2_RATE_CENTS)}</p>
-            <p className="text-xs text-neutral-500">per employee / campaign</p>
-          </div>
-          <div className="p-4 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
-            <h3 className="font-medium mb-1 text-sm text-green-600 dark:text-green-400">Team (annual)</h3>
-            <p className="text-xl font-bold text-green-600 dark:text-green-400">{formatPrice(ANNUAL_PRICING.TEAM_RATE_CENTS)}</p>
-            <p className="text-xs text-green-600/70 dark:text-green-400/70">per employee / year</p>
-          </div>
-          <div className="p-4 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
-            <h3 className="font-medium mb-1 text-sm text-green-600 dark:text-green-400">Enterprise (annual)</h3>
-            <p className="text-xl font-bold text-green-600 dark:text-green-400">{formatPrice(ANNUAL_PRICING.ENTERPRISE_RATE_CENTS)}</p>
-            <p className="text-xs text-green-600/70 dark:text-green-400/70">per employee / year</p>
-          </div>
-        </div>
-      </div>
 
-      {/* Payment History */}
-      <div className="rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900">
-        <div className="p-4 border-b border-neutral-200 dark:border-neutral-700">
-          <h2 className="text-lg font-semibold">Payment History</h2>
-        </div>
-
-        {paymentList.length === 0 ? (
-          <div className="text-center py-12">
-            <Receipt className="w-12 h-12 mx-auto mb-4 text-neutral-400" />
-            <p className="text-neutral-600 dark:text-neutral-400">
-              No payments yet. Payments will appear here when you send campaign invites.
-            </p>
-          </div>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Campaign</TableHead>
-                <TableHead>Employees</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>Refund</TableHead>
-                <TableHead>Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {paymentList.map((payment) => (
-                <TableRow key={payment.id}>
-                  <TableCell className="text-neutral-600 dark:text-neutral-400">
-                    {formatDate(payment.completed_at || payment.created_at)}
-                  </TableCell>
-                  <TableCell>
-                    {payment.campaign && payment.campaign_id ? (
-                      <Link 
-                        href={`/dashboard/campaigns/${payment.campaign_id}`}
-                        className="text-primary hover:underline"
-                      >
-                        {payment.campaign.name}
-                      </Link>
-                    ) : (
-                      <span className="text-neutral-400">—</span>
-                    )}
-                  </TableCell>
-                  <TableCell>{payment.employee_count}</TableCell>
-                  <TableCell className="font-medium">
-                    {payment.is_subscription_campaign ? (
-                      <span className="flex items-center gap-1 text-green-600">
-                        <Sparkles className="w-3 h-3" />
-                        Included
-                      </span>
-                    ) : (
-                      formatPrice(payment.amount_cents)
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {payment.refund_amount_cents > 0 ? (
-                      <span className="text-green-600">
-                        -{formatPrice(payment.refund_amount_cents)}
-                      </span>
-                    ) : (
-                      <span className="text-neutral-400">—</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={getStatusBadge(payment.status)}>
-                      {payment.status.replace('_', ' ')}
-                    </Badge>
-                  </TableCell>
+          {paymentList.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 text-center px-6">
+              <div className="w-12 h-12 rounded-xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mb-4">
+                <Receipt className="w-6 h-6 text-neutral-400" />
+              </div>
+              <p className="font-medium text-neutral-700 dark:text-neutral-300">No payments yet</p>
+              <p className="text-sm text-neutral-400 mt-1">Payments appear here when you send campaign invites.</p>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-neutral-50 dark:bg-neutral-800/50">
+                  <TableHead className="text-xs font-semibold uppercase tracking-wide">Date</TableHead>
+                  <TableHead className="text-xs font-semibold uppercase tracking-wide">Campaign</TableHead>
+                  <TableHead className="text-xs font-semibold uppercase tracking-wide text-center">Employees</TableHead>
+                  <TableHead className="text-xs font-semibold uppercase tracking-wide">Amount</TableHead>
+                  <TableHead className="text-xs font-semibold uppercase tracking-wide">Status</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
+              </TableHeader>
+              <TableBody>
+                {paymentList.map((payment) => (
+                  <TableRow key={payment.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
+                    <TableCell className="text-sm text-neutral-500 dark:text-neutral-400 whitespace-nowrap">
+                      {formatDate(payment.completed_at || payment.created_at)}
+                    </TableCell>
+                    <TableCell>
+                      {payment.campaign && payment.campaign_id ? (
+                        <Link
+                          href={`/dashboard/campaigns/${payment.campaign_id}`}
+                          className="text-sm font-medium text-primary hover:underline"
+                        >
+                          {payment.campaign.name}
+                        </Link>
+                      ) : (
+                        <span className="text-sm text-neutral-400">—</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-center text-sm">{payment.employee_count}</TableCell>
+                    <TableCell>
+                      {payment.is_subscription_campaign ? (
+                        <span className="inline-flex items-center gap-1.5 text-sm font-medium text-green-600 dark:text-green-400">
+                          <Sparkles className="w-3.5 h-3.5" />
+                          Included
+                        </span>
+                      ) : (
+                        <div>
+                          <span className="text-sm font-semibold text-neutral-900 dark:text-white">
+                            {formatPrice(payment.amount_cents)}
+                          </span>
+                          {(payment.refund_amount_cents || 0) > 0 && (
+                            <span className="block text-xs text-green-600 dark:text-green-400">
+                              -{formatPrice(payment.refund_amount_cents)}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={getStatusBadge(payment.status)} className="text-xs capitalize">
+                        {payment.status.replace('_', ' ')}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </div>
+
+        {/* Pricing Reference */}
+        <div className="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 overflow-hidden self-start">
+          <div className="px-6 py-4 border-b border-neutral-200 dark:border-neutral-700">
+            <h2 className="text-base font-semibold text-neutral-900 dark:text-white">Current rates</h2>
+          </div>
+          <div className="p-6 space-y-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400 mb-3">Pay per campaign</p>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between p-3 rounded-lg bg-neutral-50 dark:bg-neutral-800">
+                  <span className="text-sm text-neutral-600 dark:text-neutral-400">Team</span>
+                  <div className="text-right">
+                    <span className="text-sm font-bold text-neutral-900 dark:text-white">{formatPrice(PRICING.TIER_1_RATE_CENTS)}</span>
+                    <span className="text-xs text-neutral-400 block">/ employee</span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between p-3 rounded-lg bg-neutral-50 dark:bg-neutral-800">
+                  <span className="text-sm text-neutral-600 dark:text-neutral-400">Enterprise</span>
+                  <div className="text-right">
+                    <span className="text-sm font-bold text-neutral-900 dark:text-white">{formatPrice(PRICING.TIER_2_RATE_CENTS)}</span>
+                    <span className="text-xs text-neutral-400 block">/ employee</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="border-t border-neutral-200 dark:border-neutral-700 pt-4">
+              <div className="flex items-center gap-2 mb-3">
+                <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400">Annual plans</p>
+                <span className="text-xs font-medium text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-400 px-1.5 py-0.5 rounded-full">Save 25%</span>
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between p-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
+                  <span className="text-sm text-green-700 dark:text-green-300">Team</span>
+                  <div className="text-right">
+                    <span className="text-sm font-bold text-green-700 dark:text-green-300">{formatPrice(ANNUAL_PRICING.TEAM_RATE_CENTS)}</span>
+                    <span className="text-xs text-green-600/70 dark:text-green-400/70 block">/ employee / year</span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between p-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
+                  <span className="text-sm text-green-700 dark:text-green-300">Enterprise</span>
+                  <div className="text-right">
+                    <span className="text-sm font-bold text-green-700 dark:text-green-300">{formatPrice(ANNUAL_PRICING.ENTERPRISE_RATE_CENTS)}</span>
+                    <span className="text-xs text-green-600/70 dark:text-green-400/70 block">/ employee / year</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <Link
+              href="/pricing"
+              className="flex items-center justify-center gap-1.5 w-full text-sm font-medium text-primary hover:underline pt-2"
+            >
+              View full pricing
+              <ArrowUpRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+        </div>
       </div>
     </>
   );

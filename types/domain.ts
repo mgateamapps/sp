@@ -11,6 +11,9 @@ import type {
 export interface Organization {
   id: string;
   name: string;
+  logo_url: string | null;
+  invite_message: string | null;
+  invite_reply_to: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -26,6 +29,7 @@ export interface AdminProfile {
   full_name: string;
   email: string;
   role: AdminRole;
+  avatar_url: string | null;
   created_at: string;
   updated_at: string;
 }

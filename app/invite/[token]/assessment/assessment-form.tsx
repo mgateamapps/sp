@@ -8,7 +8,7 @@ import type { ScenarioKey } from '@/types';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { ArrowLeft, ArrowRight, Send, Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
+import toast from 'react-hot-toast';
 
 interface AssessmentFormProps {
   token: string;

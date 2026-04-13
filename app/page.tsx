@@ -14,6 +14,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
+import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -34,7 +35,10 @@ import {
   UsersRound,
 } from 'lucide-react';
 
-function Header() {
+async function Header() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
   return (
     <header className="border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950">
       <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
@@ -54,20 +58,34 @@ function Header() {
           >
             Pricing
           </Link>
-          <Link
-            href="/auth/login"
-            className="text-sm text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
-          >
-            Login
-          </Link>
-          <Link href="/auth/register">
-            <Button size="sm">Try free</Button>
-          </Link>
+          {user ? (
+            <Link href="/dashboard">
+              <Button size="sm">Go to Dashboard</Button>
+            </Link>
+          ) : (
+            <>
+              <Link
+                href="/auth/login"
+                className="text-sm text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
+              >
+                Login
+              </Link>
+              <Link href="/auth/register">
+                <Button size="sm">Try free</Button>
+              </Link>
+            </>
+          )}
         </nav>
         <div className="md:hidden">
-          <Link href="/auth/register">
-            <Button size="sm">Try free</Button>
-          </Link>
+          {user ? (
+            <Link href="/dashboard">
+              <Button size="sm">Dashboard</Button>
+            </Link>
+          ) : (
+            <Link href="/auth/register">
+              <Button size="sm">Try free</Button>
+            </Link>
+          )}
         </div>
       </div>
     </header>
