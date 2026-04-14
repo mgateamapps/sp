@@ -10,6 +10,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import type { Metadata } from 'next';
 import { getCurrentAdminProfile } from '@/lib/queries/admin';
+import { CREDIT_PACKS, formatPrice, getPricePerCredit } from '@/lib/utils/pricing';
 import {
   ChevronDown,
   CheckCircle,
@@ -21,9 +22,6 @@ import {
   Mail,
   FileText,
   Target,
-  Sparkles,
-  Gift,
-  Calendar,
   Zap,
 } from 'lucide-react';
 
@@ -110,120 +108,80 @@ function HeroSection() {
 }
 
 function PricingSection() {
-  const plans = [
-    {
-      name: 'Test',
-      badge: null,
-      price: 'Free',
-      priceDetail: 'try it yourself first',
-      description:
-        'Try out the assessment yourself. See the scenarios, experience the flow, and understand what your team would go through.',
-      features: [
-        '1 user (yourself)',
-        'All 5 assessment scenarios',
-        'Personal feedback report',
-        'See how scoring works',
-      ],
-      cta: 'Try for free',
-      ctaLink: '/auth/register',
-      ctaVariant: 'outline' as const,
-      highlighted: false,
-    },
-    {
-      name: 'Team',
-      badge: 'Most Popular',
-      price: '$2',
-      priceDetail: 'per employee / campaign',
-      description:
-        'For companies up to 50 employees. Get a complete AI literacy baseline with individual feedback and company-wide insights.',
-      features: [
-        'Up to 50 employees',
-        'Pay per campaign',
-        'Individual employee feedback',
-        'Company dashboard',
-        'Weakness analysis',
-        'Email support',
-      ],
-      cta: 'Start now',
-      ctaLink: '/auth/register',
-      ctaVariant: 'default' as const,
-      highlighted: true,
-    },
-    {
-      name: 'Enterprise',
-      badge: null,
-      price: '$1.50',
-      priceDetail: 'per employee / campaign',
-      description:
-        'For larger organizations with 50+ employees. Better rates, custom onboarding, dedicated support, and advanced reporting.',
-      features: [
-        'Unlimited employees',
-        'Volume discount',
-        'Priority support',
-        'Custom onboarding',
-        'Advanced analytics',
-        'API access',
-      ],
-      cta: 'Get started',
-      ctaLink: '/auth/register',
-      ctaVariant: 'outline' as const,
-      highlighted: false,
-    },
-  ];
-
   return (
     <section className="py-20 md:py-28 bg-white dark:bg-neutral-950 -mt-10">
-      <div className="max-w-6xl mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {plans.map((plan) => (
+      <div className="max-w-5xl mx-auto px-4">
+        {/* Free trial card */}
+        <div className="rounded-2xl border-2 border-dashed border-slate-200 dark:border-neutral-700 p-8 mb-12 text-center max-w-xl mx-auto">
+          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+            <Zap className="w-6 h-6 text-primary" />
+          </div>
+          <h3 className="text-xl font-bold mb-2 text-heading dark:text-white">Try it yourself first</h3>
+          <p className="text-slate-500 dark:text-neutral-400 mb-6">
+            Take the full 5-scenario assessment yourself for free. See exactly what your employees will experience and how scoring works — before buying anything.
+          </p>
+          <Link href="/auth/register">
+            <Button variant="outline" size="lg">Start free assessment</Button>
+          </Link>
+        </div>
+
+        {/* Credit packs */}
+        <div className="text-center mb-10">
+          <h2 className="text-3xl font-bold text-heading dark:text-white mb-3">Credit packs for teams</h2>
+          <p className="text-slate-500 dark:text-neutral-400 max-w-2xl mx-auto">
+            Buy credits upfront. 1 credit = 1 employee who <strong>completes</strong> an assessment.
+            Credits never expire. No subscriptions, no refund complexity.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+          {CREDIT_PACKS.map((pack) => (
             <Card
-              key={plan.name}
+              key={pack.id}
               className={
-                plan.highlighted
-                  ? 'border-2 border-primary shadow-2xl relative scale-105 bg-white'
-                  : 'border-2 border-slate-200 dark:border-neutral-800 hover:border-primary/30 transition-colors'
+                pack.highlighted
+                  ? 'border-2 border-primary shadow-2xl relative bg-white dark:bg-neutral-900'
+                  : 'border-2 border-slate-200 dark:border-neutral-800 hover:border-primary/30 transition-colors bg-white dark:bg-neutral-900'
               }
             >
-              {plan.badge && (
+              {pack.highlighted && (
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                  <Badge className="bg-primary text-primary-foreground px-4 py-1">
-                    {plan.badge}
-                  </Badge>
+                  <Badge className="bg-primary text-primary-foreground px-4 py-1">Most Popular</Badge>
                 </div>
               )}
               <CardHeader className="pt-8 pb-4 text-center">
-                <CardTitle className="text-2xl font-bold text-heading">{plan.name}</CardTitle>
+                <CardTitle className="text-2xl font-bold text-heading dark:text-white">{pack.name}</CardTitle>
                 <div className="mt-4">
-                  <span className="text-4xl font-bold text-heading">{plan.price}</span>
+                  <span className="text-4xl font-bold text-heading dark:text-white">{formatPrice(pack.price_cents)}</span>
                 </div>
-                <div className="text-sm text-slate-500 mt-1">
-                  {plan.priceDetail}
-                </div>
+                <div className="text-sm text-slate-500 mt-1">{pack.credits} credits</div>
+                <div className="text-xs text-slate-400 mt-0.5">{formatPrice(Math.round(getPricePerCredit(pack)))} per assessment</div>
               </CardHeader>
               <CardContent className="pt-4">
-                <p className="text-slate-600 dark:text-neutral-400 mb-6 text-center">
-                  {plan.description}
+                <p className="text-slate-600 dark:text-neutral-400 mb-6 text-center text-sm">
+                  {pack.description}
                 </p>
-
-                <ul className="space-y-3 mb-8">
-                  {plan.features.map((feature) => (
-                    <li
-                      key={feature}
-                      className="flex items-center gap-3"
-                    >
-                      <CheckCircle className="w-5 h-5 text-green-500 shrink-0" />
-                      <span className="text-slate-700 dark:text-slate-300">{feature}</span>
-                    </li>
-                  ))}
+                <ul className="space-y-2 mb-8">
+                  <li className="flex items-center gap-2 text-sm">
+                    <CheckCircle className="w-4 h-4 text-green-500 shrink-0" />
+                    <span className="text-slate-700 dark:text-slate-300">No expiry</span>
+                  </li>
+                  <li className="flex items-center gap-2 text-sm">
+                    <CheckCircle className="w-4 h-4 text-green-500 shrink-0" />
+                    <span className="text-slate-700 dark:text-slate-300">Unlimited campaigns</span>
+                  </li>
+                  <li className="flex items-center gap-2 text-sm">
+                    <CheckCircle className="w-4 h-4 text-green-500 shrink-0" />
+                    <span className="text-slate-700 dark:text-slate-300">Only pay for completions</span>
+                  </li>
                 </ul>
-
-                <Link href={plan.ctaLink} className="block">
-                  <Button 
-                    variant={plan.ctaVariant} 
-                    className={`w-full ${plan.highlighted ? 'py-6 text-base' : ''}`}
-                    size={plan.highlighted ? 'lg' : 'default'}
+                <Link href="/auth/register" className="block">
+                  <Button
+                    variant={pack.highlighted ? 'default' : 'outline'}
+                    className="w-full"
+                    size={pack.highlighted ? 'lg' : 'default'}
                   >
-                    {plan.cta}
+                    Get started
                   </Button>
                 </Link>
               </CardContent>
@@ -231,155 +189,10 @@ function PricingSection() {
           ))}
         </div>
 
-        <p className="text-center text-slate-500 mt-12 max-w-2xl mx-auto">
-          All plans include the same 5 practical assessment scenarios and structured scoring rubric.
-          Pay only for active employees assessed.
-        </p>
-      </div>
-    </section>
-  );
-}
-
-function AnnualPlansSection() {
-  return (
-    <section className="py-20 md:py-28 relative overflow-hidden">
-      {/* Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-green-900 via-emerald-800 to-teal-900" />
-      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djItSDI0di0yaDEyek0zNiAyNHYySDI0di0yaDEyeiIvPjwvZz48L2c+PC9zdmc+')] opacity-50" />
-      
-      <div className="relative z-10 max-w-6xl mx-auto px-4">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-yellow-400/20 border border-yellow-400/30 rounded-full mb-6">
-            <Gift className="w-5 h-5 text-yellow-400" />
-            <span className="text-yellow-300 font-semibold">Special Offer</span>
-            <Sparkles className="w-4 h-4 text-yellow-400" />
-          </div>
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            Save 25% with Annual Plans
-          </h2>
-          <p className="text-lg text-emerald-100 max-w-2xl mx-auto">
-            Commit to a year, get <span className="font-bold text-yellow-300">4 campaigns for the price of 3</span>. 
-            Perfect for teams running regular assessments.
-          </p>
-        </div>
-
-        {/* Annual Plan Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-          {/* Team Annual */}
-          <div className="relative group">
-            <div className="absolute -inset-1 bg-gradient-to-r from-yellow-400 to-emerald-400 rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-300" />
-            <Card className="relative bg-white dark:bg-neutral-900 border-0 shadow-2xl">
-              <CardHeader className="pb-4">
-                <div className="flex items-center justify-between mb-2">
-                  <CardTitle className="text-xl font-bold text-heading">Team Annual</CardTitle>
-                  <Badge className="bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">
-                    Save 25%
-                  </Badge>
-                </div>
-                <p className="text-sm text-slate-500">Up to 50 employees</p>
-              </CardHeader>
-              <CardContent>
-                <div className="mb-6">
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-4xl font-bold text-heading">$6</span>
-                    <span className="text-slate-500">/ employee / year</span>
-                  </div>
-                  <p className="text-sm text-slate-400 mt-1">
-                    <span className="line-through">$8</span> (4 × $2) → Pay for 3, get 4
-                  </p>
-                </div>
-
-                <ul className="space-y-3 mb-6">
-                  <li className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center shrink-0">
-                      <Calendar className="w-4 h-4 text-green-600 dark:text-green-400" />
-                    </div>
-                    <span className="text-slate-700 dark:text-slate-300">4 campaigns per year</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center shrink-0">
-                      <Gift className="w-4 h-4 text-green-600 dark:text-green-400" />
-                    </div>
-                    <span className="text-slate-700 dark:text-slate-300">1 campaign FREE</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center shrink-0">
-                      <Zap className="w-4 h-4 text-green-600 dark:text-green-400" />
-                    </div>
-                    <span className="text-slate-700 dark:text-slate-300">All Team features included</span>
-                  </li>
-                </ul>
-
-                <Link href="/auth/register" className="block">
-                  <Button className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700">
-                    <Sparkles className="w-4 h-4 mr-2" />
-                    Get Annual Plan
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Enterprise Annual */}
-          <div className="relative group">
-            <div className="absolute -inset-1 bg-gradient-to-r from-emerald-400 to-teal-400 rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-300" />
-            <Card className="relative bg-white dark:bg-neutral-900 border-0 shadow-2xl">
-              <CardHeader className="pb-4">
-                <div className="flex items-center justify-between mb-2">
-                  <CardTitle className="text-xl font-bold text-heading">Enterprise Annual</CardTitle>
-                  <Badge className="bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">
-                    Save 25%
-                  </Badge>
-                </div>
-                <p className="text-sm text-slate-500">50+ employees</p>
-              </CardHeader>
-              <CardContent>
-                <div className="mb-6">
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-4xl font-bold text-heading">$4.50</span>
-                    <span className="text-slate-500">/ employee / year</span>
-                  </div>
-                  <p className="text-sm text-slate-400 mt-1">
-                    <span className="line-through">$6</span> (4 × $1.50) → Pay for 3, get 4
-                  </p>
-                </div>
-
-                <ul className="space-y-3 mb-6">
-                  <li className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center shrink-0">
-                      <Calendar className="w-4 h-4 text-green-600 dark:text-green-400" />
-                    </div>
-                    <span className="text-slate-700 dark:text-slate-300">4 campaigns per year</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center shrink-0">
-                      <Gift className="w-4 h-4 text-green-600 dark:text-green-400" />
-                    </div>
-                    <span className="text-slate-700 dark:text-slate-300">1 campaign FREE</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center shrink-0">
-                      <Zap className="w-4 h-4 text-green-600 dark:text-green-400" />
-                    </div>
-                    <span className="text-slate-700 dark:text-slate-300">All Enterprise features included</span>
-                  </li>
-                </ul>
-
-                <Link href="/auth/register" className="block">
-                  <Button className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700">
-                    <Sparkles className="w-4 h-4 mr-2" />
-                    Get Annual Plan
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-
-        {/* Extra info */}
-        <p className="text-center text-emerald-200 mt-10 text-sm max-w-xl mx-auto">
-          Need more than 4 campaigns? No problem — additional campaigns are billed at standard per-campaign rates.
+        <p className="text-center text-slate-500 text-sm">
+          Need more than 500 credits?{' '}
+          <a href="mailto:hello@scoreprompt.com" className="text-primary hover:underline">Contact us</a>{' '}
+          for enterprise pricing.
         </p>
       </div>
     </section>
@@ -610,7 +423,6 @@ export default async function PricingPage() {
       <main>
         <HeroSection />
         <PricingSection />
-        <AnnualPlansSection />
         <WhatsIncludedSection />
         <FAQSection />
         <FinalCTASection />

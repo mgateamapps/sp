@@ -17,12 +17,9 @@ import { getCurrentAdminProfile } from "@/lib/queries/admin";
 import {
   getCampaignWithStats,
   getCampaignParticipantsPaginated,
-  getCampaignPayment,
 } from "@/lib/queries/campaigns";
-import { formatPrice } from "@/lib/utils/pricing";
+import { getCreditBalance } from "@/lib/queries/credits";
 import { SendInvitesButton } from "./send-invites-button";
-import { RefundButton } from "./refund-button";
-import { PaymentSuccessToast } from "./payment-success-toast";
 import type { Metadata } from "next";
 import Link from "next/link";
 import {
@@ -34,7 +31,6 @@ import {
   Clock,
   Eye,
   ExternalLink,
-  CreditCard,
 } from "lucide-react";
 import { redirect, notFound } from "next/navigation";
 import type { ScoreBand } from "@/types";
@@ -48,13 +44,13 @@ const PAGE_SIZE = 50;
 
 interface CampaignPageProps {
   params: Promise<{ campaignId: string }>;
-  searchParams: Promise<{ payment?: string; page?: string; search?: string }>;
+  searchParams: Promise<{ page?: string; search?: string }>;
 }
 
 
 export default async function CampaignDetailPage({ params, searchParams }: CampaignPageProps) {
   const { campaignId } = await params;
-  const { payment, page: pageParam, search = '' } = await searchParams;
+  const { page: pageParam, search = '' } = await searchParams;
   const page = Math.max(1, parseInt(pageParam ?? '1', 10) || 1);
 
   const admin = await getCurrentAdminProfile();
@@ -71,9 +67,9 @@ export default async function CampaignDetailPage({ params, searchParams }: Campa
     notFound();
   }
 
-  const [{ participants, total: participantsTotal }, paymentInfo] = await Promise.all([
+  const [{ participants, total: participantsTotal }, creditBalance] = await Promise.all([
     getCampaignParticipantsPaginated(campaignId, { page, pageSize: PAGE_SIZE, search }),
-    getCampaignPayment(campaignId),
+    getCreditBalance(admin.organization_id),
   ]);
 
   const completionRate =
@@ -81,23 +77,18 @@ export default async function CampaignDetailPage({ params, searchParams }: Campa
       ? Math.round((campaign.completed_count / campaign.participant_count) * 100)
       : 0;
 
-  // For stats that need full participant counts, use the campaign stats (already fetched)
-  const pendingInviteCount = 0; // updated below via a lean query
   const openedCount = campaign.started_count;
-  const notStartedCount = campaign.participant_count - campaign.started_count;
 
-  const isPaid =
-    paymentInfo !== null &&
-    (paymentInfo.status === 'completed' || paymentInfo.status === 'partially_refunded');
+  // Pending invite count = participants not yet emailed (no token_hash)
+  const pendingInviteCount = participants.filter(
+    (p) => p.status === 'invited' && !(p as { token_hash?: string }).token_hash
+  ).length;
 
   const basePath = `/dashboard/campaigns/${campaignId}`;
   const paginationSearchParams: Record<string, string> = search ? { search } : {};
-  if (payment) paginationSearchParams.payment = payment;
 
   return (
     <>
-      {payment === 'success' && <PaymentSuccessToast />}
-
       <div className="mb-6">
         <Link
           href="/dashboard/campaigns"
@@ -137,45 +128,14 @@ export default async function CampaignDetailPage({ params, searchParams }: Campa
             </div>
           </div>
           <div className="flex items-center gap-2">
-            {isPaid && notStartedCount > 0 && paymentInfo && (
-              <RefundButton
-                campaignId={campaignId}
-                originalEmployeeCount={paymentInfo.employee_count}
-                eligibleForRefundCount={notStartedCount}
-              />
-            )}
             <SendInvitesButton
               campaignId={campaignId}
-              pendingCount={pendingInviteCount}
-              isPaid={isPaid}
+              pendingCount={campaign.participant_count}
+              creditBalance={creditBalance}
             />
           </div>
         </div>
       </div>
-
-      {/* Payment Info */}
-      {paymentInfo && (
-        <div className="rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-4 mb-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <CreditCard className="w-5 h-5 text-green-500" />
-              <div>
-                <span className="font-medium">Payment Complete</span>
-                <span className="text-neutral-500 ml-2">
-                  {formatPrice(paymentInfo.amount_cents)} for {paymentInfo.employee_count}{' '}
-                  employees
-                </span>
-              </div>
-            </div>
-            {paymentInfo.refund_amount_cents > 0 && (
-              <Badge variant="secondary">
-                Refunded: {formatPrice(paymentInfo.refund_amount_cents)} (
-                {paymentInfo.refund_employee_count} employees)
-              </Badge>
-            )}
-          </div>
-        </div>
-      )}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">

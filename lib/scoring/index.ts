@@ -197,9 +197,57 @@ export async function scoreAttempt(
     console.error('Failed to update attempt status:', updateAttemptError);
   }
 
+  // Deduct 1 credit from the organization
+  await deductCredit(supabase, attemptId, attempt.campaign_participant_id);
+
   return {
     success: true,
     error: null,
     already_scored: false,
   };
+}
+
+async function deductCredit(
+  supabase: ReturnType<typeof createAdminClient>,
+  attemptId: string,
+  participantId: string
+): Promise<void> {
+  try {
+    // Resolve organization_id via participant → campaign
+    const { data: participant } = await supabase
+      .from('campaign_participants')
+      .select('campaigns(organization_id)')
+      .eq('id', participantId)
+      .single();
+
+    const campaignData = participant?.campaigns as unknown as { organization_id: string } | { organization_id: string }[] | null;
+    const campaign = Array.isArray(campaignData) ? campaignData[0] : campaignData;
+    const orgId = campaign?.organization_id;
+    if (!orgId) {
+      console.error('Could not resolve organization_id for credit deduction, attemptId:', attemptId);
+      return;
+    }
+
+    // Decrement balance (can go negative — admin gets a warning on billing page)
+    const { data: org } = await supabase
+      .from('organizations')
+      .select('credit_balance')
+      .eq('id', orgId)
+      .single();
+
+    await supabase
+      .from('organizations')
+      .update({ credit_balance: (org?.credit_balance ?? 0) - 1 })
+      .eq('id', orgId);
+
+    await supabase.from('credit_transactions').insert({
+      organization_id: orgId,
+      amount: -1,
+      type: 'deduction',
+      assessment_attempt_id: attemptId,
+    });
+  } catch (err) {
+    // Non-fatal: scoring already completed, just log
+    console.error('Failed to deduct credit for attempt', attemptId, err);
+  }
 }
