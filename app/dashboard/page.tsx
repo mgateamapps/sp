@@ -27,6 +27,7 @@ import SkillsBreakdownChart from "@/components/dashboard/skills-breakdown-chart"
 import ScoreDistributionChart from "@/components/dashboard/score-distribution-chart";
 import CompletionRateChart from "@/components/dashboard/completion-rate-chart";
 import ScoreTrendChart from "@/components/dashboard/score-trend-chart";
+import { QuickTestButton } from "@/components/dashboard/quick-test-button";
 import type { Metadata } from "next";
 import Link from "next/link";
 import {
@@ -91,12 +92,15 @@ export default async function AppDashboardPage() {
         <p className="text-neutral-500 text-center max-w-sm mb-8">
           Create your first campaign to start assessing your team's AI literacy. Results and insights will appear here automatically.
         </p>
-        <Link href="/dashboard/campaigns/new">
-          <Button size="lg">
-            Create your first campaign
-            <ArrowRight className="w-4 h-4 ml-2" />
-          </Button>
-        </Link>
+        <div className="flex flex-col sm:flex-row items-center gap-3">
+          <Link href="/dashboard/campaigns/new">
+            <Button size="lg">
+              Create your first campaign
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          </Link>
+          <QuickTestButton />
+        </div>
 
         <div className="mt-16 grid grid-cols-1 sm:grid-cols-3 gap-6 w-full max-w-2xl">
           <div className="flex flex-col items-center text-center gap-2">

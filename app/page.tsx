@@ -15,6 +15,7 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import { createClient } from '@/lib/supabase/server';
+import { QuickTestButton } from '@/components/dashboard/quick-test-button';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -33,6 +34,10 @@ import {
   Building2,
   GraduationCap,
   UsersRound,
+  ArrowRight,
+  Mail,
+  Award,
+  Clock,
 } from 'lucide-react';
 
 async function Header() {
@@ -71,7 +76,7 @@ async function Header() {
                 Login
               </Link>
               <Link href="/auth/register">
-                <Button size="sm">Try free</Button>
+                <Button size="sm">Start free</Button>
               </Link>
             </>
           )}
@@ -83,7 +88,7 @@ async function Header() {
             </Link>
           ) : (
             <Link href="/auth/register">
-              <Button size="sm">Try free</Button>
+              <Button size="sm">Start free</Button>
             </Link>
           )}
         </div>
@@ -92,12 +97,12 @@ async function Header() {
   );
 }
 
-function HeroSection() {
+function HeroSection({ isLoggedIn }: { isLoggedIn: boolean }) {
   return (
     <section className="relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900" />
       <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMyI+PHBhdGggZD0iTTM2IDM0djItSDI0di0yaDEyek0zNiAyNHYySDI0di0yaDEyeiIvPjwvZz48L2c+PC9zdmc+')] opacity-50" />
-      
+
       <div className="relative z-10 max-w-6xl mx-auto px-4 py-20 md:py-32">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div>
@@ -105,42 +110,55 @@ function HeroSection() {
               <Zap className="w-4 h-4" />
               AI Literacy Assessment Platform
             </div>
-            
+
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
-              Measure how well your team{' '}
-              <span className="text-primary">actually uses AI</span>
+              Know exactly how well your team{' '}
+              <span className="text-primary">uses AI</span>
             </h1>
-            
+
             <p className="text-lg text-slate-300 mb-8 leading-relaxed">
-              ScorePrompt helps companies assess employee prompt-writing skills,
-              identify weak spots, and track AI literacy over time — with
-              structured scoring and actionable insights.
+              ScorePrompt assesses employee prompt-writing skills in 5 minutes — no setup, no employee accounts. Get individual scores, team patterns, and clear insight into AI adoption.
             </p>
 
             <div className="flex flex-wrap gap-4 mb-10">
-              <Link href="/auth/register">
-                <Button size="lg" className="text-base px-8">
-                  Try free
-                </Button>
-              </Link>
-              <Link href="/pricing">
-                <Button variant="outline" size="lg" className="text-base px-8 bg-white/10 border-white/20 text-white hover:bg-white/20">
-                  View pricing
-                </Button>
-              </Link>
+              {isLoggedIn ? (
+                <>
+                  <Link href="/dashboard">
+                    <Button size="lg" className="text-base px-8">
+                      Go to Dashboard
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  </Link>
+                  <QuickTestButton />
+                </>
+              ) : (
+                <>
+                  <Link href="/auth/register">
+                    <Button size="lg" className="text-base px-8">
+                      Start free
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  </Link>
+                  <Link href="/pricing">
+                    <Button variant="outline" size="lg" className="text-base px-8 bg-white/10 border-white/20 text-white hover:bg-white/20">
+                      View pricing
+                    </Button>
+                  </Link>
+                </>
+              )}
             </div>
 
             <div className="flex flex-wrap gap-6">
               {[
-                '5 practical scenarios',
-                'Individual feedback',
-                'Team insights',
+                'No employee accounts needed',
+                '5-minute assessment',
+                'Instant AI scoring',
               ].map((item) => (
                 <div
                   key={item}
                   className="flex items-center gap-2 text-sm text-slate-400"
                 >
-                  <CheckCircle className="w-4 h-4 text-green-400" />
+                  <CheckCircle className="w-4 h-4 text-green-400 shrink-0" />
                   {item}
                 </div>
               ))}
@@ -218,27 +236,54 @@ function HeroSection() {
   );
 }
 
+function ProofStrip() {
+  return (
+    <div className="border-b border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-950">
+      <div className="max-w-6xl mx-auto px-4 py-6">
+        <div className="flex flex-wrap justify-center items-center gap-10 md:gap-20 text-center">
+          {[
+            { value: '~5 min', label: 'Employee completion time', icon: Clock },
+            { value: '5', label: 'Practical AI scenarios', icon: ClipboardCheck },
+            { value: '5 criteria', label: 'Scored per response', icon: Award },
+            { value: 'Instant', label: 'AI scoring & feedback', icon: Zap },
+          ].map(({ value, label, icon: Icon }) => (
+            <div key={label} className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                <Icon className="w-4 h-4 text-primary" />
+              </div>
+              <div className="text-left">
+                <div className="text-lg font-bold text-heading dark:text-white leading-none">{value}</div>
+                <div className="text-sm text-neutral-500 mt-0.5">{label}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function HowItWorksSection() {
   const steps = [
     {
       number: '1',
       title: 'Invite your team',
       description:
-        'Add employee emails and launch an assessment campaign in minutes.',
+        'Add employee emails and launch an assessment campaign in minutes. Employees receive a secure link — no account needed.',
       icon: Users,
     },
     {
       number: '2',
       title: 'Employees complete 5 prompt tasks',
       description:
-        'Each employee responds to practical, universal AI prompting scenarios through a simple guided flow.',
+        'Each employee responds to practical, real-world AI prompting scenarios through a clean, guided interface.',
       icon: ClipboardCheck,
     },
     {
       number: '3',
-      title: 'Get scored results and company insights',
+      title: 'Get scores and team insights',
       description:
-        'ScorePrompt evaluates responses, generates individual feedback, and shows team-level patterns in one dashboard.',
+        'ScorePrompt scores every response, generates individual feedback, and surfaces team-level patterns — all in one dashboard.',
       icon: BarChart3,
     },
   ];
@@ -252,7 +297,7 @@ function HowItWorksSection() {
           </span>
           <h2 className="text-3xl md:text-4xl font-bold mb-4 text-heading dark:text-white">How it works</h2>
           <p className="text-neutral-600 dark:text-neutral-400 max-w-2xl mx-auto text-lg">
-            Three simple steps to measure and improve your team's AI literacy.
+            Three steps to measure and improve your team's AI literacy.
           </p>
         </div>
 
@@ -284,42 +329,117 @@ function HowItWorksSection() {
   );
 }
 
+function TryItSection({ isLoggedIn }: { isLoggedIn: boolean }) {
+  const steps = [
+    {
+      icon: Mail,
+      title: 'Receive an invite email',
+      desc: 'Employees get a secure, personal link. No account or password required.',
+    },
+    {
+      icon: ClipboardCheck,
+      title: 'Complete 5 prompt tasks',
+      desc: 'Universal scenarios: summarize, draft, extract, compare, and improve.',
+    },
+    {
+      icon: Award,
+      title: 'Get instant AI feedback',
+      desc: 'Each response is scored across 5 criteria with a detailed breakdown and tips.',
+    },
+  ];
+
+  return (
+    <section className="py-20 md:py-28 relative overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900" />
+      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMyI+PHBhdGggZD0iTTM2IDM0djItSDI0di0yaDEyek0zNiAyNHYySDI0di0yaDEyeiIvPjwvZz48L2c+PC9zdmc+')] opacity-50" />
+
+      <div className="relative z-10 max-w-6xl mx-auto px-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/20 text-primary text-sm font-medium mb-6">
+              <Zap className="w-4 h-4" />
+              Try it yourself
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 leading-tight">
+              See it from the employee's perspective
+            </h2>
+            <p className="text-slate-300 text-lg mb-8">
+              Take the assessment yourself in 5 minutes. You'll experience exactly what your employees see — and get your own AI literacy score and feedback.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 mb-5">
+              {isLoggedIn ? (
+                <QuickTestButton />
+              ) : (
+                <Link href="/auth/register">
+                  <Button size="lg" className="text-base px-8">
+                    Create free account to try
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </Link>
+              )}
+            </div>
+            <p className="text-sm text-slate-400">
+              {isLoggedIn
+                ? 'A personal test campaign is created instantly. Invite link goes to your email.'
+                : 'Free account includes 5 test credits. No credit card required.'}
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            {steps.map(({ icon: Icon, title, desc }) => (
+              <div key={title} className="flex gap-4 p-5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/8 transition-colors">
+                <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center shrink-0">
+                  <Icon className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <div className="font-semibold text-white mb-1">{title}</div>
+                  <div className="text-sm text-slate-400">{desc}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function WhatCompaniesGetSection() {
   const features = [
     {
       title: 'Clear AI literacy baseline',
       description:
-        'See where your team really stands before investing further in training or rollout.',
+        'See where your team actually stands before investing further in training or AI rollout.',
       icon: Target,
     },
     {
       title: 'Employee-level scoring',
       description:
-        'Get a structured score for each employee across key prompting criteria.',
+        'A structured score for each employee across key prompting criteria — not just a pass/fail.',
       icon: Users,
     },
     {
       title: 'Actionable feedback',
       description:
-        'Each employee receives feedback, weaknesses, and a better version of their prompt.',
+        'Each employee receives specific weaknesses and a rewritten version of their own prompt.',
       icon: MessageSquare,
     },
     {
       title: 'Management dashboard',
       description:
-        'Track participation, average score, weak areas, and repeated mistakes across the company.',
+        'Track participation, average score, weak areas, and repeated mistakes across the whole company.',
       icon: LayoutDashboard,
     },
     {
       title: 'Repeatable assessment cycles',
       description:
-        'Run follow-up assessments later and measure whether skills are actually improving.',
+        'Run follow-up campaigns later and measure whether skills actually improved over time.',
       icon: RefreshCw,
     },
     {
       title: 'Simple rollout',
       description:
-        'No complex setup, no employee accounts, no training portal to manage.',
+        'No complex setup, no employee accounts, no LMS to manage. Invite by email and you\'re done.',
       icon: Zap,
     },
   ];
@@ -339,11 +459,13 @@ function WhatCompaniesGetSection() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {features.map((feature) => (
+          {features.map((feature) => {
+            const FeatureIcon = feature.icon;
+            return (
             <Card key={feature.title} className="group hover:shadow-lg transition-shadow border-2 border-transparent hover:border-primary/10">
               <CardContent className="pt-8 pb-8">
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
-                  <feature.icon className="w-6 h-6 text-primary" />
+                  <FeatureIcon className="w-6 h-6 text-primary" />
                 </div>
                 <h3 className="text-lg font-bold mb-2 text-heading dark:text-white">{feature.title}</h3>
                 <p className="text-neutral-600 dark:text-neutral-400">
@@ -351,7 +473,8 @@ function WhatCompaniesGetSection() {
                 </p>
               </CardContent>
             </Card>
-          ))}
+          );
+          })}
         </div>
       </div>
     </section>
@@ -466,58 +589,6 @@ function WhatIsAssessedSection() {
   );
 }
 
-function WhyThisMattersSection() {
-  const audiences = [
-    {
-      title: 'For leadership',
-      description:
-        'Understand whether AI adoption is actually happening in a useful, measurable way.',
-      icon: Building2,
-    },
-    {
-      title: 'For HR and L&D',
-      description:
-        'Identify skill gaps, repeated weaknesses, and where coaching should focus next.',
-      icon: GraduationCap,
-    },
-    {
-      title: 'For teams',
-      description:
-        'Give employees concrete feedback on how to write better prompts and get better outputs.',
-      icon: UsersRound,
-    },
-  ];
-
-  return (
-    <section className="py-20 md:py-28 bg-slate-50 dark:bg-neutral-900">
-      <div className="max-w-6xl mx-auto px-4">
-        <div className="text-center mb-16">
-          <span className="inline-block px-3 py-1 text-xs font-medium bg-primary/10 text-primary rounded-full mb-4">
-            Who It's For
-          </span>
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-heading dark:text-white">Why companies use ScorePrompt</h2>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {audiences.map((audience) => (
-            <Card key={audience.title} className="text-center group hover:shadow-lg transition-all border-2 border-transparent hover:border-primary/10">
-              <CardContent className="pt-10 pb-10">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
-                  <audience.icon className="w-8 h-8 text-primary" />
-                </div>
-                <h3 className="text-xl font-bold mb-3 text-heading dark:text-white">{audience.title}</h3>
-                <p className="text-neutral-600 dark:text-neutral-400">
-                  {audience.description}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
 function DashboardPreviewSection() {
   const weaknesses = [
     'Missing output format',
@@ -549,7 +620,7 @@ function DashboardPreviewSection() {
   }
 
   return (
-    <section className="py-20 md:py-28 bg-white dark:bg-neutral-950">
+    <section className="py-20 md:py-28 bg-slate-50 dark:bg-neutral-900">
       <div className="max-w-6xl mx-auto px-4">
         <div className="text-center mb-16">
           <span className="inline-block px-3 py-1 text-xs font-medium bg-primary/10 text-primary rounded-full mb-4">
@@ -560,18 +631,18 @@ function DashboardPreviewSection() {
           </h2>
           <p className="text-neutral-600 dark:text-neutral-400 max-w-2xl mx-auto text-lg">
             Not just scores — ScorePrompt highlights participation, weak areas,
-            repeated mistakes, and where improvement should happen next.
+            repeated mistakes, and where to focus next.
           </p>
         </div>
 
         <Card className="shadow-2xl max-w-4xl mx-auto border-2 border-primary/10">
           <CardContent className="pt-8 pb-8">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-              <div className="p-5 rounded-xl bg-slate-50 border border-slate-100 text-center">
+              <div className="p-5 rounded-xl bg-white border border-slate-100 text-center">
                 <div className="text-3xl font-bold text-primary">86%</div>
                 <div className="text-sm text-slate-500">Completion rate</div>
               </div>
-              <div className="p-5 rounded-xl bg-slate-50 border border-slate-100 text-center">
+              <div className="p-5 rounded-xl bg-white border border-slate-100 text-center">
                 <div className="text-3xl font-bold text-heading">68</div>
                 <div className="text-sm text-slate-500">Average score</div>
               </div>
@@ -638,32 +709,94 @@ function DashboardPreviewSection() {
   );
 }
 
+function WhyThisMattersSection() {
+  const audiences = [
+    {
+      title: 'For leadership',
+      description:
+        'Understand whether AI adoption is actually happening in a measurable, useful way — not just on paper.',
+      icon: Building2,
+    },
+    {
+      title: 'For HR and L&D',
+      description:
+        'Identify skill gaps, repeated weaknesses, and where coaching or training should focus next.',
+      icon: GraduationCap,
+    },
+    {
+      title: 'For teams',
+      description:
+        'Give employees concrete, personalized feedback on how to write better prompts and get better AI outputs.',
+      icon: UsersRound,
+    },
+  ];
+
+  return (
+    <section className="py-20 md:py-28 bg-white dark:bg-neutral-950">
+      <div className="max-w-6xl mx-auto px-4">
+        <div className="text-center mb-16">
+          <span className="inline-block px-3 py-1 text-xs font-medium bg-primary/10 text-primary rounded-full mb-4">
+            Who It's For
+          </span>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-heading dark:text-white">Why companies use ScorePrompt</h2>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {audiences.map((audience) => (
+            <Card key={audience.title} className="text-center group hover:shadow-lg transition-all border-2 border-transparent hover:border-primary/10">
+              <CardContent className="pt-10 pb-10">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                  <audience.icon className="w-8 h-8 text-primary" />
+                </div>
+                <h3 className="text-xl font-bold mb-3 text-heading dark:text-white">{audience.title}</h3>
+                <p className="text-neutral-600 dark:text-neutral-400">
+                  {audience.description}
+                </p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function FAQSection() {
   const faqs = [
     {
       question: 'Does every employee need an account?',
       answer:
-        'No. Employees access the assessment through a secure email link. No separate employee login is required in the MVP flow.',
+        'No. Employees access the assessment through a secure, personal email link. No account, password, or app download is required.',
     },
     {
       question: 'Is this a training platform?',
       answer:
-        'No. ScorePrompt is an assessment and feedback tool, not a course platform or LMS.',
+        'No. ScorePrompt is an assessment and feedback tool, not a course platform or LMS. It measures current skill levels and provides feedback — training is up to you.',
     },
     {
       question: 'Are the scenarios specific to one profession?',
       answer:
-        'No. The MVP uses universal work scenarios designed to evaluate general prompt-writing quality across knowledge-worker teams.',
+        'No. The scenarios are universal — designed for general knowledge-worker tasks that apply across departments: summarizing documents, drafting emails, extracting actions, comparing options, and improving text.',
     },
     {
       question: 'What does the company receive after the assessment?',
       answer:
-        'Companies get employee-level results, aggregated team insights, and a management-friendly overview of common weaknesses and capability gaps.',
+        'You get employee-level scores, skill breakdowns across 5 criteria, aggregated team insights, and a clear view of repeated weaknesses and capability gaps.',
+    },
+    {
+      question: 'How are responses scored?',
+      answer:
+        'Each prompt response is evaluated by AI across 5 criteria: clarity, context, constraints, output format, and verification mindset. Scores are normalized to a 0–100 scale.',
     },
     {
       question: 'Can we run this again later?',
       answer:
-        'Yes. ScorePrompt is designed to support repeat assessment cycles so companies can measure progress over time.',
+        'Yes. ScorePrompt supports repeat assessment campaigns so you can measure whether skills are improving over time after training or coaching.',
+    },
+    {
+      question: 'How does billing work?',
+      answer:
+        'ScorePrompt uses a credit system. 1 credit = 1 employee who completes an assessment. You only pay for completions — not invites. Credits never expire.',
     },
   ];
 
@@ -694,7 +827,7 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
         <CollapsibleTrigger className="w-full">
           <CardContent className="py-4 flex items-center justify-between cursor-pointer">
             <span className="font-medium text-left">{question}</span>
-            <ChevronDown className="w-5 h-5 text-neutral-500 transition-transform [[data-state=open]_&]:rotate-180" />
+            <ChevronDown className="w-5 h-5 text-neutral-500 transition-transform [[data-state=open]_&]:rotate-180 shrink-0 ml-4" />
           </CardContent>
         </CollapsibleTrigger>
         <CollapsibleContent>
@@ -709,12 +842,12 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
   );
 }
 
-function FinalCTASection() {
+function FinalCTASection({ isLoggedIn }: { isLoggedIn: boolean }) {
   return (
     <section className="py-20 md:py-28 relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900" />
       <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMyI+PHBhdGggZD0iTTM2IDM0djItSDI0di0yaDEyek0zNiAyNHYySDI0di0yaDEyeiIvPjwvZz48L2c+PC9zdmc+')] opacity-50" />
-      
+
       <div className="relative z-10 max-w-3xl mx-auto px-4 text-center">
         <span className="inline-block px-3 py-1 text-xs font-medium bg-primary/20 text-primary rounded-full mb-6">
           Get Started Today
@@ -723,20 +856,41 @@ function FinalCTASection() {
           See how strong your team's AI prompting really is
         </h2>
         <p className="text-slate-300 mb-10 max-w-xl mx-auto text-lg">
-          Launch a pilot, assess your team, and get a clear baseline of current
-          AI literacy across your company.
+          Launch a campaign, assess your team, and get a clear baseline of AI literacy across your company — in a single afternoon.
         </p>
 
         <div className="flex flex-wrap justify-center gap-4">
-          <Link href="/auth/register">
-            <Button size="lg" className="text-base px-8">Try free</Button>
-          </Link>
-          <Link href="/pricing">
-            <Button variant="outline" size="lg" className="text-base px-8 bg-white/10 border-white/20 text-white hover:bg-white/20">
-              View pricing
-            </Button>
-          </Link>
+          {isLoggedIn ? (
+            <>
+              <Link href="/dashboard/campaigns/new">
+                <Button size="lg" className="text-base px-8">
+                  Create campaign
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </Link>
+              <QuickTestButton />
+            </>
+          ) : (
+            <>
+              <Link href="/auth/register">
+                <Button size="lg" className="text-base px-8">
+                  Start free
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </Link>
+              <Link href="/pricing">
+                <Button variant="outline" size="lg" className="text-base px-8 bg-white/10 border-white/20 text-white hover:bg-white/20">
+                  View pricing
+                </Button>
+              </Link>
+            </>
+          )}
         </div>
+        {!isLoggedIn && (
+          <p className="text-sm text-slate-500 mt-6">
+            Free account includes 5 assessment credits. No credit card required.
+          </p>
+        )}
       </div>
     </section>
   );
@@ -774,32 +928,42 @@ function Footer() {
               Login
             </Link>
             <Link href="/auth/register">
-              <Button size="sm">Try free</Button>
+              <Button size="sm">Start free</Button>
             </Link>
           </div>
         </div>
 
-        <div className="border-t border-slate-200 dark:border-neutral-800 mt-8 pt-8 text-center text-sm text-slate-500">
-          © {new Date().getFullYear()} ScorePrompt. All rights reserved.
+        <div className="border-t border-slate-200 dark:border-neutral-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center gap-3 text-sm text-slate-500">
+          <span>© {new Date().getFullYear()} ScorePrompt. All rights reserved.</span>
+          <div className="flex items-center gap-6">
+            <Link href="/terms" className="hover:text-primary transition-colors">Terms</Link>
+            <Link href="/privacy" className="hover:text-primary transition-colors">Privacy</Link>
+          </div>
         </div>
       </div>
     </footer>
   );
 }
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const isLoggedIn = !!user;
+
   return (
     <div className="min-h-screen bg-white dark:bg-neutral-950">
       <Header />
       <main>
-        <HeroSection />
+        <HeroSection isLoggedIn={isLoggedIn} />
+        <ProofStrip />
         <HowItWorksSection />
         <WhatCompaniesGetSection />
         <WhatIsAssessedSection />
-        <WhyThisMattersSection />
+        <TryItSection isLoggedIn={isLoggedIn} />
         <DashboardPreviewSection />
+        <WhyThisMattersSection />
         <FAQSection />
-        <FinalCTASection />
+        <FinalCTASection isLoggedIn={isLoggedIn} />
       </main>
       <Footer />
     </div>
