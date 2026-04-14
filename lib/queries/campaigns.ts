@@ -1,14 +1,11 @@
 import { createClient } from '@/lib/supabase/server';
-import type { Campaign, CampaignParticipant, Employee, ScoreBand } from '@/types';
+import type { Campaign, CampaignParticipant, Employee, ParticipantWithEmployee, ScoreBand } from '@/types';
+export type { ParticipantWithEmployee } from '@/types';
 
 export interface CampaignWithStats extends Campaign {
   participant_count: number;
   started_count: number;
   completed_count: number;
-}
-
-export interface ParticipantWithEmployee extends CampaignParticipant {
-  employee: Employee;
 }
 
 export interface ParticipantWithScore extends CampaignParticipant {

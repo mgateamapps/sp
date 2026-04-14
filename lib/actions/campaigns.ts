@@ -70,46 +70,33 @@ export async function createCampaign(formData: FormData): Promise<CreateCampaign
       return { success: false, error: 'Failed to create campaign' };
     }
 
-    for (const email of emails) {
-      let { data: employee } = await supabase
-        .from('employees')
-        .select('id')
-        .eq('organization_id', admin.organization_id)
-        .eq('email', email)
-        .single();
+    // Batch upsert all employees in one query (was 2-3 queries per email)
+    const { data: employees, error: employeesError } = await supabase
+      .from('employees')
+      .upsert(
+        emails.map((email) => ({ organization_id: admin.organization_id, email })),
+        { onConflict: 'organization_id,email' }
+      )
+      .select('id, email');
 
-      if (!employee) {
-        const { data: newEmployee, error: employeeError } = await supabase
-          .from('employees')
-          .insert({
-            organization_id: admin.organization_id,
-            email: email,
-          })
-          .select()
-          .single();
+    if (employeesError || !employees || employees.length === 0) {
+      console.error('Failed to upsert employees:', employeesError);
+      return { success: false, error: 'Failed to add participants' };
+    }
 
-        if (employeeError || !newEmployee) {
-          console.error(`Failed to create employee for ${email}:`, employeeError);
-          continue;
-        }
-        employee = newEmployee;
-      }
-
-      if (!employee) {
-        continue;
-      }
-
-      const { error: participantError } = await supabase
-        .from('campaign_participants')
-        .insert({
+    // Batch insert all participants in one query
+    const { error: participantsError } = await supabase
+      .from('campaign_participants')
+      .insert(
+        employees.map((e) => ({
           campaign_id: campaign.id,
-          employee_id: employee.id,
+          employee_id: e.id,
           status: 'invited',
-        });
+        }))
+      );
 
-      if (participantError) {
-        console.error(`Failed to add participant ${email}:`, participantError);
-      }
+    if (participantsError) {
+      console.error('Failed to insert participants:', participantsError);
     }
 
     revalidatePath('/dashboard/campaigns');

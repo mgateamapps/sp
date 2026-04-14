@@ -1,6 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { getCurrentOrganization } from "@/lib/queries/admin";
+import { getCurrentAdminProfile } from "@/lib/queries/admin";
+import { redirect } from "next/navigation";
+import { getBandVariant, formatBandLabel, formatDate } from "@/lib/utils/formatting";
 import {
   getDashboardStats,
   getSkillBreakdown,
@@ -27,47 +29,10 @@ import {
   Minus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { ScoreBand } from "@/types";
-
 export const metadata: Metadata = {
   title: "Summary | ScorePrompt",
   description: "Full organization assessment summary",
 };
-
-function getBandVariant(band: ScoreBand) {
-  switch (band) {
-    case "expert":
-    case "strong":
-      return "success";
-    case "functional":
-      return "info";
-    case "basic":
-      return "warning";
-    case "at_risk":
-      return "danger";
-    default:
-      return "secondary";
-  }
-}
-
-function formatBandLabel(band: ScoreBand): string {
-  switch (band) {
-    case "at_risk": return "At Risk";
-    case "basic": return "Basic";
-    case "functional": return "Functional";
-    case "strong": return "Strong";
-    case "expert": return "Expert";
-    default: return band;
-  }
-}
-
-function formatDate(dateString: string): string {
-  return new Date(dateString).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-}
 
 function ScoreBar({ value, max = 100, colorClass }: { value: number; max?: number; colorClass: string }) {
   const pct = Math.round((value / max) * 100);
@@ -94,14 +59,9 @@ function BandBar({ count, total, colorClass }: { count: number; total: number; c
 }
 
 export default async function SummaryPage() {
-  const organization = await getCurrentOrganization();
-
-  if (!organization) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-neutral-500">Unable to load summary data.</p>
-      </div>
-    );
+  const admin = await getCurrentAdminProfile();
+  if (!admin) {
+    redirect('/auth/login');
   }
 
   const [
@@ -113,13 +73,13 @@ export default async function SummaryPage() {
     weaknesses,
     recentCompletions,
   ] = await Promise.all([
-    getDashboardStats(organization.id),
-    getSkillBreakdown(organization.id),
-    getScoreDistribution(organization.id),
-    getCampaignComparison(organization.id),
-    getTopPerformers(organization.id, 10),
-    getCommonWeaknesses(organization.id),
-    getRecentCompletions(organization.id, 50),
+    getDashboardStats(admin.organization_id),
+    getSkillBreakdown(admin.organization_id),
+    getScoreDistribution(admin.organization_id),
+    getCampaignComparison(admin.organization_id),
+    getTopPerformers(admin.organization_id, 10),
+    getCommonWeaknesses(admin.organization_id),
+    getRecentCompletions(admin.organization_id, 50),
   ]);
 
   const hasData = stats.totalCampaigns > 0;

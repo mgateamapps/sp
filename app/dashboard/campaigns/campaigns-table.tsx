@@ -10,29 +10,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { CampaignWithStats } from "@/lib/queries/campaigns";
+import { getStatusBadgeVariant, formatDate } from "@/lib/utils/formatting";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-
-function getStatusBadgeVariant(status: string): "default" | "secondary" | "outline" {
-  switch (status) {
-    case 'active':
-      return 'default';
-    case 'closed':
-      return 'secondary';
-    default:
-      return 'outline';
-  }
-}
-
-function formatDate(dateString: string | null): string {
-  if (!dateString) return '—';
-  return new Date(dateString).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
-}
 
 export default function CampaignsTable({ campaigns }: { campaigns: CampaignWithStats[] }) {
   const router = useRouter();

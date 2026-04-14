@@ -9,6 +9,7 @@ import {
 import Link from 'next/link';
 import Image from 'next/image';
 import type { Metadata } from 'next';
+import { getCurrentAdminProfile } from '@/lib/queries/admin';
 import {
   ChevronDown,
   CheckCircle,
@@ -32,7 +33,7 @@ export const metadata: Metadata = {
     "Start with a pilot, assess your team's AI prompting capability, and get structured results. Simple pricing for companies serious about AI literacy.",
 };
 
-function Header() {
+function Header({ isLoggedIn }: { isLoggedIn: boolean }) {
   return (
     <header className="border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950">
       <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
@@ -52,20 +53,34 @@ function Header() {
           >
             Pricing
           </Link>
-          <Link
-            href="/auth/login"
-            className="text-sm text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
-          >
-            Login
-          </Link>
-          <Link href="/auth/register">
-            <Button size="sm">Try free</Button>
-          </Link>
+          {isLoggedIn ? (
+            <Link href="/dashboard">
+              <Button size="sm">Go to dashboard</Button>
+            </Link>
+          ) : (
+            <>
+              <Link
+                href="/auth/login"
+                className="text-sm text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
+              >
+                Login
+              </Link>
+              <Link href="/auth/register">
+                <Button size="sm">Try free</Button>
+              </Link>
+            </>
+          )}
         </nav>
         <div className="md:hidden">
-          <Link href="/auth/register">
-            <Button size="sm">Try free</Button>
-          </Link>
+          {isLoggedIn ? (
+            <Link href="/dashboard">
+              <Button size="sm">Dashboard</Button>
+            </Link>
+          ) : (
+            <Link href="/auth/register">
+              <Button size="sm">Try free</Button>
+            </Link>
+          )}
         </div>
       </div>
     </header>
@@ -587,10 +602,11 @@ function Footer() {
   );
 }
 
-export default function PricingPage() {
+export default async function PricingPage() {
+  const admin = await getCurrentAdminProfile();
   return (
     <div className="min-h-screen bg-white dark:bg-neutral-950">
-      <Header />
+      <Header isLoggedIn={admin !== null} />
       <main>
         <HeroSection />
         <PricingSection />

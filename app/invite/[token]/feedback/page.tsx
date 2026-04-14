@@ -2,6 +2,7 @@ import { validateInviteToken } from '@/lib/queries/invites';
 import { getAttemptByParticipantId } from '@/lib/queries/assessment';
 import { getFullAssessmentResult } from '@/lib/queries/scoring';
 import { getScenario, RUBRIC_CRITERIA, getScoreBand } from '@/lib/constants/assessment';
+import { ScoreBadge } from '@/components/ui/score-badge';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import {
@@ -25,22 +26,6 @@ interface FeedbackPageProps {
   params: Promise<{ token: string }>;
 }
 
-function ScoreBadge({ score, max = 100 }: { score: number; max?: number }) {
-  const percentage = (score / max) * 100;
-  let colorClass = 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
-  if (percentage >= 80) {
-    colorClass = 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
-  } else if (percentage >= 60) {
-    colorClass = 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
-  } else if (percentage >= 40) {
-    colorClass = 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300';
-  }
-  return (
-    <span className={`px-2 py-1 rounded-md text-sm font-medium ${colorClass}`}>
-      {score}/{max}
-    </span>
-  );
-}
 
 function CriterionBar({ label, score, max = 100 }: { label: string; score: number; max?: number }) {
   const percentage = (score / max) * 100;

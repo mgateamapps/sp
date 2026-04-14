@@ -9,7 +9,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getCurrentOrganization } from "@/lib/queries/admin";
+import { getCurrentAdminProfile } from "@/lib/queries/admin";
+import { redirect } from "next/navigation";
+import { getBandVariant, formatBandLabel, formatDate } from "@/lib/utils/formatting";
 import {
   getDashboardStats,
   getSkillBreakdown,
@@ -42,65 +44,16 @@ import {
   ArrowDownRight,
   Minus,
 } from "lucide-react";
-import type { ScoreBand } from "@/types";
 
 export const metadata: Metadata = {
   title: "Dashboard | ScorePrompt",
   description: "Overview of your team's AI literacy assessments",
 };
 
-function getBandVariant(band: ScoreBand) {
-  switch (band) {
-    case "expert":
-      return "success";
-    case "strong":
-      return "success";
-    case "functional":
-      return "info";
-    case "basic":
-      return "warning";
-    case "at_risk":
-      return "danger";
-    default:
-      return "secondary";
-  }
-}
-
-function formatBandLabel(band: ScoreBand): string {
-  switch (band) {
-    case "at_risk":
-      return "At Risk";
-    case "basic":
-      return "Basic";
-    case "functional":
-      return "Functional";
-    case "strong":
-      return "Strong";
-    case "expert":
-      return "Expert";
-    default:
-      return band;
-  }
-}
-
-function formatDate(dateString: string): string {
-  return new Date(dateString).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-  });
-}
-
 export default async function AppDashboardPage() {
-  const organization = await getCurrentOrganization();
-
-  if (!organization) {
-    return (
-      <>
-        <div className="text-center py-12">
-          <p className="text-neutral-500">Unable to load dashboard data.</p>
-        </div>
-      </>
-    );
+  const admin = await getCurrentAdminProfile();
+  if (!admin) {
+    redirect('/auth/login');
   }
 
   const [
@@ -114,15 +67,15 @@ export default async function AppDashboardPage() {
     employeeProgress,
     scoreTrend,
   ] = await Promise.all([
-    getDashboardStats(organization.id),
-    getSkillBreakdown(organization.id),
-    getScoreDistribution(organization.id),
-    getRecentCompletions(organization.id, 5),
-    getCommonWeaknesses(organization.id),
-    getTopPerformers(organization.id, 5),
-    getCampaignComparison(organization.id),
-    getEmployeeProgressHistory(organization.id, 5),
-    getScoreTrend(organization.id),
+    getDashboardStats(admin.organization_id),
+    getSkillBreakdown(admin.organization_id),
+    getScoreDistribution(admin.organization_id),
+    getRecentCompletions(admin.organization_id, 5),
+    getCommonWeaknesses(admin.organization_id),
+    getTopPerformers(admin.organization_id, 5),
+    getCampaignComparison(admin.organization_id),
+    getEmployeeProgressHistory(admin.organization_id, 5),
+    getScoreTrend(admin.organization_id),
   ]);
 
   const hasData = stats.totalCampaigns > 0;

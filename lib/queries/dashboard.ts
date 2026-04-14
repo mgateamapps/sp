@@ -567,44 +567,76 @@ export async function getCampaignComparison(
 
   if (!campaigns || campaigns.length === 0) return [];
 
+  const campaignIds = campaigns.map((c) => c.id);
+
+  // Batch all 3 fetches — 4 queries total regardless of campaign count (was 3×N)
+  const { data: allParticipants } = await supabase
+    .from('campaign_participants')
+    .select('id, campaign_id, status')
+    .in('campaign_id', campaignIds);
+
+  const completedParticipantIds = (allParticipants ?? [])
+    .filter((p) => p.status === 'completed')
+    .map((p) => p.id);
+
+  const { data: allAttempts } = completedParticipantIds.length > 0
+    ? await supabase
+        .from('assessment_attempts')
+        .select('id, campaign_participant_id')
+        .in('campaign_participant_id', completedParticipantIds)
+    : { data: [] };
+
+  const attemptIds = (allAttempts ?? []).map((a) => a.id);
+
+  const { data: allScores } = attemptIds.length > 0
+    ? await supabase
+        .from('assessment_scores')
+        .select('attempt_id, total_score')
+        .in('attempt_id', attemptIds)
+    : { data: [] };
+
+  // Build lookup maps for grouping
+  const participantToCampaign = new Map(
+    (allParticipants ?? []).map((p) => [p.id, p.campaign_id])
+  );
+  const attemptToParticipant = new Map(
+    (allAttempts ?? []).map((a) => [a.id, a.campaign_participant_id])
+  );
+
+  // Group counts + scores by campaign_id
+  const campaignStats = new Map<
+    string,
+    { total: number; completed: number; scoreSum: number; scoreCount: number }
+  >();
+  for (const c of campaigns) {
+    campaignStats.set(c.id, { total: 0, completed: 0, scoreSum: 0, scoreCount: 0 });
+  }
+  for (const p of allParticipants ?? []) {
+    const stat = campaignStats.get(p.campaign_id);
+    if (!stat) continue;
+    stat.total++;
+    if (p.status === 'completed') stat.completed++;
+  }
+  for (const score of allScores ?? []) {
+    const participantId = attemptToParticipant.get(score.attempt_id);
+    if (!participantId) continue;
+    const campaignId = participantToCampaign.get(participantId);
+    if (!campaignId) continue;
+    const stat = campaignStats.get(campaignId);
+    if (!stat) continue;
+    stat.scoreSum += score.total_score;
+    stat.scoreCount++;
+  }
+
   const results: CampaignComparison[] = [];
   let previousScore: number | null = null;
 
   for (const campaign of campaigns) {
-    const { data: participants } = await supabase
-      .from('campaign_participants')
-      .select('id, status')
-      .eq('campaign_id', campaign.id);
-
-    const totalCount = participants?.length || 0;
-    const completedParticipants = participants?.filter((p) => p.status === 'completed') || [];
-    const completedCount = completedParticipants.length;
-    const completionRate = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
-
-    let averageScore: number | null = null;
-
-    if (completedCount > 0) {
-      const participantIds = completedParticipants.map((p) => p.id);
-
-      const { data: attempts } = await supabase
-        .from('assessment_attempts')
-        .select('id')
-        .in('campaign_participant_id', participantIds);
-
-      if (attempts && attempts.length > 0) {
-        const attemptIds = attempts.map((a) => a.id);
-
-        const { data: scores } = await supabase
-          .from('assessment_scores')
-          .select('total_score')
-          .in('attempt_id', attemptIds);
-
-        if (scores && scores.length > 0) {
-          const sum = scores.reduce((acc, s) => acc + s.total_score, 0);
-          averageScore = Math.round(sum / scores.length);
-        }
-      }
-    }
+    const stat = campaignStats.get(campaign.id)!;
+    const averageScore =
+      stat.scoreCount > 0 ? Math.round(stat.scoreSum / stat.scoreCount) : null;
+    const completionRate =
+      stat.total > 0 ? Math.round((stat.completed / stat.total) * 100) : 0;
 
     let trend: 'up' | 'down' | 'same' | null = null;
     if (previousScore !== null && averageScore !== null) {
@@ -617,16 +649,14 @@ export async function getCampaignComparison(
       id: campaign.id,
       name: campaign.name,
       averageScore,
-      completedCount,
-      totalCount,
+      completedCount: stat.completed,
+      totalCount: stat.total,
       completionRate,
       createdAt: campaign.created_at,
       trend,
     });
 
-    if (averageScore !== null) {
-      previousScore = averageScore;
-    }
+    if (averageScore !== null) previousScore = averageScore;
   }
 
   return results;
@@ -749,41 +779,55 @@ export async function getScoreTrend(
 
   if (!campaigns || campaigns.length === 0) return [];
 
+  const campaignIds = campaigns.map((c) => c.id);
+
+  // Batch all 3 fetches — 4 queries total regardless of campaign count (was 3×N)
+  const { data: allParticipants } = await supabase
+    .from('campaign_participants')
+    .select('id, campaign_id')
+    .in('campaign_id', campaignIds)
+    .eq('status', 'completed');
+
+  if (!allParticipants || allParticipants.length === 0) return [];
+
+  const { data: allAttempts } = await supabase
+    .from('assessment_attempts')
+    .select('id, campaign_participant_id')
+    .in('campaign_participant_id', allParticipants.map((p) => p.id));
+
+  if (!allAttempts || allAttempts.length === 0) return [];
+
+  const { data: allScores } = await supabase
+    .from('assessment_scores')
+    .select('attempt_id, total_score')
+    .in('attempt_id', allAttempts.map((a) => a.id));
+
+  if (!allScores || allScores.length === 0) return [];
+
+  // Build lookup maps
+  const participantToCampaign = new Map(allParticipants.map((p) => [p.id, p.campaign_id]));
+  const attemptToParticipant = new Map(allAttempts.map((a) => [a.id, a.campaign_participant_id]));
+
+  // Aggregate scores per campaign
+  const campaignScores = new Map<string, { sum: number; count: number }>();
+  for (const score of allScores) {
+    const participantId = attemptToParticipant.get(score.attempt_id);
+    if (!participantId) continue;
+    const campaignId = participantToCampaign.get(participantId);
+    if (!campaignId) continue;
+    const current = campaignScores.get(campaignId) ?? { sum: 0, count: 0 };
+    current.sum += score.total_score;
+    current.count++;
+    campaignScores.set(campaignId, current);
+  }
+
   const results: ScoreTrendPoint[] = [];
-
   for (const campaign of campaigns) {
-    const { data: participants } = await supabase
-      .from('campaign_participants')
-      .select('id')
-      .eq('campaign_id', campaign.id)
-      .eq('status', 'completed');
-
-    if (!participants || participants.length === 0) continue;
-
-    const participantIds = participants.map((p) => p.id);
-
-    const { data: attempts } = await supabase
-      .from('assessment_attempts')
-      .select('id')
-      .in('campaign_participant_id', participantIds);
-
-    if (!attempts || attempts.length === 0) continue;
-
-    const attemptIds = attempts.map((a) => a.id);
-
-    const { data: scores } = await supabase
-      .from('assessment_scores')
-      .select('total_score')
-      .in('attempt_id', attemptIds);
-
-    if (!scores || scores.length === 0) continue;
-
-    const sum = scores.reduce((acc, s) => acc + s.total_score, 0);
-    const averageScore = Math.round(sum / scores.length);
-
+    const stat = campaignScores.get(campaign.id);
+    if (!stat || stat.count === 0) continue;
     results.push({
       campaignName: campaign.name,
-      averageScore,
+      averageScore: Math.round(stat.sum / stat.count),
       date: campaign.created_at,
     });
   }

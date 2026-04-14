@@ -22,14 +22,7 @@ export const metadata: Metadata = {
   description: "View your payment history and subscription",
 };
 
-function formatDate(dateString: string | null): string {
-  if (!dateString) return '—';
-  return new Date(dateString).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
-}
+import { formatDate } from "@/lib/utils/formatting";
 
 function getStatusBadge(status: string): "default" | "secondary" | "outline" | "destructive" {
   switch (status) {

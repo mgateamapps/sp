@@ -85,20 +85,20 @@ export class OpenAIScorer implements Scorer {
   }
 
   async score(input: ScoringInput): Promise<ScoringOutput> {
-    const scenarioScores: ScenarioScoringResult[] = [];
-
-    for (const response of input.responses) {
-      const scenario = getScenario(response.scenario_key);
-      if (!scenario) continue;
-
-      const scenarioScore = await this.scoreScenario(
-        response.scenario_key,
-        scenario.title,
-        scenario.instruction,
-        response.response_text
-      );
-      scenarioScores.push(scenarioScore);
-    }
+    // Score all scenarios in parallel — cuts total time by ~5× vs sequential
+    const results = await Promise.all(
+      input.responses.map(async (response) => {
+        const scenario = getScenario(response.scenario_key);
+        if (!scenario) return null;
+        return this.scoreScenario(
+          response.scenario_key,
+          scenario.title,
+          scenario.instruction,
+          response.response_text
+        );
+      })
+    );
+    const scenarioScores = results.filter((r): r is ScenarioScoringResult => r !== null);
 
     const assessmentScore = this.calculateAssessmentScore(scenarioScores);
 

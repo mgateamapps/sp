@@ -11,6 +11,8 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Pagination } from "@/components/ui/pagination";
 import { SearchableContent } from "@/components/ui/searchable-content";
+import { ScoreBadge } from "@/components/ui/score-badge";
+import { formatDate, formatDateTime, getStatusBadgeVariant, getParticipantStatusBadge } from "@/lib/utils/formatting";
 import { getCurrentAdminProfile } from "@/lib/queries/admin";
 import {
   getCampaignWithStats,
@@ -49,64 +51,6 @@ interface CampaignPageProps {
   searchParams: Promise<{ payment?: string; page?: string; search?: string }>;
 }
 
-function getStatusBadgeVariant(status: string): "default" | "secondary" | "outline" {
-  switch (status) {
-    case 'active':
-      return 'default';
-    case 'closed':
-      return 'secondary';
-    default:
-      return 'outline';
-  }
-}
-
-function getParticipantStatusBadge(status: string): "default" | "secondary" | "outline" {
-  switch (status) {
-    case 'completed':
-      return 'default';
-    case 'started':
-    case 'opened':
-      return 'secondary';
-    default:
-      return 'outline';
-  }
-}
-
-function formatDate(dateString: string | null): string {
-  if (!dateString) return '—';
-  return new Date(dateString).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
-}
-
-function formatDateTime(dateString: string | null): string {
-  if (!dateString) return '—';
-  return new Date(dateString).toLocaleString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-  });
-}
-
-function ScoreBadge({ score }: { score: number }) {
-  let colorClass = 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
-  if (score >= 80) {
-    colorClass = 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
-  } else if (score >= 60) {
-    colorClass = 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
-  } else if (score >= 40) {
-    colorClass = 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300';
-  }
-  return (
-    <span className={`px-2 py-0.5 rounded text-sm font-medium ${colorClass}`}>
-      {score}
-    </span>
-  );
-}
 
 export default async function CampaignDetailPage({ params, searchParams }: CampaignPageProps) {
   const { campaignId } = await params;
