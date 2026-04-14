@@ -1,5 +1,6 @@
-import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import { Button } from "@/components/ui/button";
+import { Pagination } from "@/components/ui/pagination";
+import { SearchableContent } from "@/components/ui/searchable-content";
 import { getCurrentAdminProfile } from "@/lib/queries/admin";
 import { getCampaignsForOrganization } from "@/lib/queries/campaigns";
 import type { Metadata } from "next";
@@ -13,18 +14,31 @@ export const metadata: Metadata = {
   description: "Manage your assessment campaigns",
 };
 
-export default async function CampaignsPage() {
+const PAGE_SIZE = 20;
+
+interface CampaignsPageProps {
+  searchParams: Promise<{ page?: string; search?: string }>;
+}
+
+export default async function CampaignsPage({ searchParams }: CampaignsPageProps) {
   const admin = await getCurrentAdminProfile();
   if (!admin) {
     redirect('/auth/login');
   }
 
-  const campaigns = await getCampaignsForOrganization(admin.organization_id);
+  const { page: pageParam, search = '' } = await searchParams;
+  const page = Math.max(1, parseInt(pageParam ?? '1', 10) || 1);
+
+  const { campaigns, total } = await getCampaignsForOrganization(admin.organization_id, {
+    page,
+    pageSize: PAGE_SIZE,
+    search,
+  });
+
+  const isEmpty = total === 0 && !search;
 
   return (
     <>
-      <DashboardBreadcrumb title="Campaigns" text="Campaigns" />
-
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Campaigns</h1>
         <Link href="/dashboard/campaigns/new">
@@ -35,7 +49,7 @@ export default async function CampaignsPage() {
         </Link>
       </div>
 
-      {campaigns.length === 0 ? (
+      {isEmpty ? (
         <div className="rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-6">
           <div className="text-center py-12">
             <Users className="w-12 h-12 mx-auto mb-4 text-neutral-400" />
@@ -52,7 +66,31 @@ export default async function CampaignsPage() {
         </div>
       ) : (
         <div className="rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900">
-          <CampaignsTable campaigns={campaigns} />
+          <SearchableContent
+            placeholder="Search campaigns..."
+            header={
+              <p className="text-sm text-neutral-500 shrink-0">
+                {total} campaign{total !== 1 ? 's' : ''}
+              </p>
+            }
+          >
+            {campaigns.length === 0 ? (
+              <div className="text-center py-12 text-neutral-500">
+                No campaigns match &ldquo;{search}&rdquo;.
+              </div>
+            ) : (
+              <>
+                <CampaignsTable campaigns={campaigns} />
+                <Pagination
+                  page={page}
+                  total={total}
+                  pageSize={PAGE_SIZE}
+                  basePath="/dashboard/campaigns"
+                  searchParams={search ? { search } : {}}
+                />
+              </>
+            )}
+          </SearchableContent>
         </div>
       )}
     </>

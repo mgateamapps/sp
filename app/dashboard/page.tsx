@@ -1,4 +1,3 @@
-import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -97,7 +96,6 @@ export default async function AppDashboardPage() {
   if (!organization) {
     return (
       <>
-        <DashboardBreadcrumb title="Dashboard" text="Dashboard" />
         <div className="text-center py-12">
           <p className="text-neutral-500">Unable to load dashboard data.</p>
         </div>
@@ -132,32 +130,50 @@ export default async function AppDashboardPage() {
 
   if (!hasData) {
     return (
-      <>
-        <DashboardBreadcrumb title="Dashboard" text="Dashboard" />
-        <div className="flex flex-col items-center justify-center py-16">
-          <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-6">
-            <LayoutDashboard className="w-8 h-8 text-primary" />
-          </div>
-          <h2 className="text-2xl font-semibold mb-2">Welcome to ScorePrompt</h2>
-          <p className="text-neutral-500 text-center max-w-md mb-6">
-            Create your first assessment campaign to start measuring your team's
-            AI literacy and see insights here.
-          </p>
-          <Link href="/dashboard/campaigns/new">
-            <Button>
-              Create first campaign
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
-          </Link>
+      <div className="flex flex-col items-center justify-center py-16 px-4">
+        <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
+          <LayoutDashboard className="w-8 h-8 text-primary" />
         </div>
-      </>
+        <h2 className="text-2xl font-semibold mb-2 text-center">No campaigns yet</h2>
+        <p className="text-neutral-500 text-center max-w-sm mb-8">
+          Create your first campaign to start assessing your team's AI literacy. Results and insights will appear here automatically.
+        </p>
+        <Link href="/dashboard/campaigns/new">
+          <Button size="lg">
+            Create your first campaign
+            <ArrowRight className="w-4 h-4 ml-2" />
+          </Button>
+        </Link>
+
+        <div className="mt-16 grid grid-cols-1 sm:grid-cols-3 gap-6 w-full max-w-2xl">
+          <div className="flex flex-col items-center text-center gap-2">
+            <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+              <Users className="w-5 h-5 text-blue-600" />
+            </div>
+            <p className="text-sm font-medium">Invite employees</p>
+            <p className="text-xs text-neutral-500">Send assessments by email — no employee account needed.</p>
+          </div>
+          <div className="flex flex-col items-center text-center gap-2">
+            <div className="w-10 h-10 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+              <Target className="w-5 h-5 text-green-600" />
+            </div>
+            <p className="text-sm font-medium">Get AI scores</p>
+            <p className="text-xs text-neutral-500">Each prompt is scored across 5 criteria by AI in real time.</p>
+          </div>
+          <div className="flex flex-col items-center text-center gap-2">
+            <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+              <TrendingUp className="w-5 h-5 text-amber-600" />
+            </div>
+            <p className="text-sm font-medium">Track progress</p>
+            <p className="text-xs text-neutral-500">Compare results across campaigns and monitor team growth.</p>
+          </div>
+        </div>
+      </div>
     );
   }
 
   return (
     <>
-      <DashboardBreadcrumb title="Dashboard" text="Dashboard" />
-
       {/* Stat Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
         <Card>

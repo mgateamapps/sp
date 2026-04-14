@@ -4,16 +4,40 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { createCampaign } from "@/lib/actions/campaigns";
+import { DOMAIN_LABELS } from "@/lib/constants/assessment";
+import type { CampaignDomain } from "@/types";
 import { Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import toast from "react-hot-toast";
 
+const DOMAIN_OPTIONS: CampaignDomain[] = [
+  'marketing',
+  'sales',
+  'support',
+  'product',
+  'engineering',
+  'hr',
+  'operations',
+  'finance',
+  'consulting',
+  'management',
+  'other',
+];
+
 export function NewCampaignForm() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [domain, setDomain] = useState<CampaignDomain>('other');
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -21,6 +45,7 @@ export function NewCampaignForm() {
 
     try {
       const formData = new FormData(e.currentTarget);
+      formData.set('domain', domain);
       const result = await createCampaign(formData);
 
       if (result.success && result.campaignId) {
@@ -40,10 +65,10 @@ export function NewCampaignForm() {
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-2">
         <Label htmlFor="name">Campaign Name *</Label>
-        <Input 
-          id="name" 
+        <Input
+          id="name"
           name="name"
-          placeholder="e.g., Q1 AI Literacy Assessment" 
+          placeholder="e.g., Q1 AI Literacy Assessment"
           required
           minLength={2}
           disabled={isSubmitting}
@@ -51,19 +76,42 @@ export function NewCampaignForm() {
       </div>
 
       <div className="space-y-2">
+        <Label htmlFor="domain">Team Domain *</Label>
+        <Select
+          value={domain}
+          onValueChange={(v) => setDomain(v as CampaignDomain)}
+          disabled={isSubmitting}
+        >
+          <SelectTrigger id="domain">
+            <SelectValue placeholder="Select domain" />
+          </SelectTrigger>
+          <SelectContent>
+            {DOMAIN_OPTIONS.map((d) => (
+              <SelectItem key={d} value={d}>
+                {DOMAIN_LABELS[d]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <p className="text-sm text-neutral-500">
+          Scenarios are tailored to your team's domain for a more relevant assessment.
+        </p>
+      </div>
+
+      <div className="space-y-2">
         <Label htmlFor="description">Description</Label>
-        <Input 
-          id="description" 
+        <Input
+          id="description"
           name="description"
-          placeholder="Optional description for this campaign" 
+          placeholder="Optional description for this campaign"
           disabled={isSubmitting}
         />
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="deadline">Deadline</Label>
-        <Input 
-          id="deadline" 
+        <Input
+          id="deadline"
           name="deadline"
           type="date"
           disabled={isSubmitting}
@@ -75,8 +123,8 @@ export function NewCampaignForm() {
 
       <div className="space-y-2">
         <Label htmlFor="emails">Employee Emails *</Label>
-        <Textarea 
-          id="emails" 
+        <Textarea
+          id="emails"
           name="emails"
           placeholder="Enter email addresses (one per line, or separated by commas)"
           rows={6}

@@ -1,4 +1,3 @@
-import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import { getCurrentAdminProfile } from "@/lib/queries/admin";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -19,8 +18,6 @@ export default async function NewCampaignPage() {
 
   return (
     <>
-      <DashboardBreadcrumb title="New Campaign" text="Campaigns / New" />
-
       <div className="mb-6">
         <Link href="/dashboard/campaigns" className="inline-flex items-center text-sm text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100">
           <ArrowLeft className="w-4 h-4 mr-2" />
@@ -37,7 +34,6 @@ export default async function NewCampaignPage() {
 
         <div className="flex flex-col gap-4">
           <div className="rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-6">
-            <h2 className="font-semibold text-neutral-900 dark:text-neutral-100 mb-4">How it works</h2>
             <div className="space-y-5">
               <div className="flex gap-3">
                 <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
@@ -70,7 +66,6 @@ export default async function NewCampaignPage() {
           </div>
 
           <div className="rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-6">
-            <h2 className="font-semibold text-neutral-900 dark:text-neutral-100 mb-3">Tips</h2>
             <ul className="space-y-2 text-sm text-neutral-500 dark:text-neutral-400">
               <li className="flex gap-2"><span className="text-primary font-bold">·</span> Use a clear name so you can identify the campaign later (e.g. "Q2 2025 – Engineering").</li>
               <li className="flex gap-2"><span className="text-primary font-bold">·</span> Set a deadline to increase completion rates.</li>

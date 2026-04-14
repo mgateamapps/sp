@@ -1,4 +1,3 @@
-import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import { getAdminWithOrganization } from "@/lib/queries/admin";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
@@ -19,8 +18,6 @@ export default async function SettingsPage() {
 
   return (
     <>
-      <DashboardBreadcrumb title="Settings" text="Settings" />
-
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         {/* Profile */}
         <div className="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 overflow-hidden">

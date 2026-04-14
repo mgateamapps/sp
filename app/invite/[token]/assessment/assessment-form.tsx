@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { SCENARIOS } from '@/lib/constants/assessment';
+import type { ScenarioDefinition } from '@/lib/constants/assessment';
 import { saveResponse, submitAssessment } from '@/lib/actions/assessment';
 import type { ScenarioKey } from '@/types';
 import { useRouter } from 'next/navigation';
@@ -15,6 +15,7 @@ interface AssessmentFormProps {
   attemptId: string;
   initialResponses: Partial<Record<ScenarioKey, string>>;
   campaignName: string;
+  scenarios: ScenarioDefinition[];
 }
 
 export function AssessmentForm({
@@ -22,6 +23,7 @@ export function AssessmentForm({
   attemptId,
   initialResponses,
   campaignName,
+  scenarios,
 }: AssessmentFormProps) {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
@@ -31,9 +33,9 @@ export function AssessmentForm({
   const [isPending, startTransition] = useTransition();
   const [isSaving, setIsSaving] = useState(false);
 
-  const currentScenario = SCENARIOS[currentStep];
-  const isLastStep = currentStep === SCENARIOS.length - 1;
-  const progress = ((currentStep + 1) / SCENARIOS.length) * 100;
+  const currentScenario = scenarios[currentStep];
+  const isLastStep = currentStep === scenarios.length - 1;
+  const progress = ((currentStep + 1) / scenarios.length) * 100;
 
   const currentResponse = responses[currentScenario.key] || '';
 
@@ -61,7 +63,7 @@ export function AssessmentForm({
 
   const handleNext = async () => {
     const saved = await saveCurrentResponse();
-    if (saved && currentStep < SCENARIOS.length - 1) {
+    if (saved && currentStep < scenarios.length - 1) {
       setCurrentStep((prev) => prev + 1);
     }
   };
@@ -90,7 +92,7 @@ export function AssessmentForm({
     });
   };
 
-  const allScenariosAnswered = SCENARIOS.every(
+  const allScenariosAnswered = scenarios.every(
     (s) => responses[s.key]?.trim().length > 0
   );
 
@@ -104,7 +106,7 @@ export function AssessmentForm({
         <div className="mb-6">
           <div className="flex justify-between text-sm text-neutral-500 mb-2">
             <span>
-              Scenario {currentStep + 1} of {SCENARIOS.length}
+              Scenario {currentStep + 1} of {scenarios.length}
             </span>
             <span>{Math.round(progress)}% complete</span>
           </div>
@@ -198,7 +200,7 @@ export function AssessmentForm({
       </div>
 
       <div className="mt-6 flex justify-center gap-2">
-        {SCENARIOS.map((scenario, index) => (
+        {scenarios.map((scenario, index) => (
           <button
             key={scenario.key}
             onClick={() => {

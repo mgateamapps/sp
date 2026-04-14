@@ -3,9 +3,8 @@
 import { createAdminClient } from '@/lib/supabase/admin';
 import { validateInviteToken } from '@/lib/queries/invites';
 import type { ScenarioKey, AssessmentAttempt } from '@/types';
-import { SCENARIOS } from '@/lib/constants/assessment';
-
-const REQUIRED_SCENARIOS: ScenarioKey[] = SCENARIOS.map((s) => s.key);
+import { SCENARIOS_BY_DOMAIN } from '@/lib/constants/assessment';
+import type { CampaignDomain } from '@/types';
 
 export async function getOrCreateAttempt(
   participantId: string
@@ -122,7 +121,10 @@ export async function submitAssessment(
       .map((r) => r.scenario_key) || []
   );
 
-  const missingScenarios = REQUIRED_SCENARIOS.filter(
+  const domain = ((participant.campaign.domain ?? 'other') as CampaignDomain);
+  const requiredScenarios = (SCENARIOS_BY_DOMAIN[domain] ?? SCENARIOS_BY_DOMAIN['other']).map((s) => s.key);
+
+  const missingScenarios = requiredScenarios.filter(
     (key) => !answeredScenarios.has(key)
   );
 

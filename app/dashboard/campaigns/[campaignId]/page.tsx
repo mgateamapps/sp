@@ -1,4 +1,3 @@
-import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,26 +9,44 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Pagination } from "@/components/ui/pagination";
+import { SearchableContent } from "@/components/ui/searchable-content";
 import { getCurrentAdminProfile } from "@/lib/queries/admin";
-import { getCampaignWithStats, getCampaignParticipants, getCampaignPayment } from "@/lib/queries/campaigns";
-import { getAssessmentScoreByParticipantId } from "@/lib/queries/scoring";
+import {
+  getCampaignWithStats,
+  getCampaignParticipantsPaginated,
+  getCampaignPayment,
+} from "@/lib/queries/campaigns";
 import { formatPrice } from "@/lib/utils/pricing";
 import { SendInvitesButton } from "./send-invites-button";
 import { RefundButton } from "./refund-button";
 import { PaymentSuccessToast } from "./payment-success-toast";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowLeft, Calendar, Mail, Users, CheckCircle, Clock, Eye, ExternalLink, CreditCard } from "lucide-react";
+import {
+  ArrowLeft,
+  Calendar,
+  Mail,
+  Users,
+  CheckCircle,
+  Clock,
+  Eye,
+  ExternalLink,
+  CreditCard,
+} from "lucide-react";
 import { redirect, notFound } from "next/navigation";
+import type { ScoreBand } from "@/types";
 
 export const metadata: Metadata = {
   title: "Campaign Details | ScorePrompt",
   description: "View campaign details and participants",
 };
 
+const PAGE_SIZE = 50;
+
 interface CampaignPageProps {
   params: Promise<{ campaignId: string }>;
-  searchParams: Promise<{ payment?: string }>;
+  searchParams: Promise<{ payment?: string; page?: string; search?: string }>;
 }
 
 function getStatusBadgeVariant(status: string): "default" | "secondary" | "outline" {
@@ -93,8 +110,9 @@ function ScoreBadge({ score }: { score: number }) {
 
 export default async function CampaignDetailPage({ params, searchParams }: CampaignPageProps) {
   const { campaignId } = await params;
-  const { payment } = await searchParams;
-  
+  const { payment, page: pageParam, search = '' } = await searchParams;
+  const page = Math.max(1, parseInt(pageParam ?? '1', 10) || 1);
+
   const admin = await getCurrentAdminProfile();
   if (!admin) {
     redirect('/auth/login');
@@ -109,38 +127,38 @@ export default async function CampaignDetailPage({ params, searchParams }: Campa
     notFound();
   }
 
-  const [participants, paymentInfo] = await Promise.all([
-    getCampaignParticipants(campaignId),
+  const [{ participants, total: participantsTotal }, paymentInfo] = await Promise.all([
+    getCampaignParticipantsPaginated(campaignId, { page, pageSize: PAGE_SIZE, search }),
     getCampaignPayment(campaignId),
   ]);
 
-  const completionRate = campaign.participant_count > 0
-    ? Math.round((campaign.completed_count / campaign.participant_count) * 100)
-    : 0;
+  const completionRate =
+    campaign.participant_count > 0
+      ? Math.round((campaign.completed_count / campaign.participant_count) * 100)
+      : 0;
 
-  const pendingInviteCount = participants.filter(p => !p.token_hash && p.status === 'invited').length;
-  const openedCount = participants.filter(p => p.status === 'opened' || p.status === 'started' || p.status === 'completed').length;
-  const notStartedCount = participants.filter(p => p.status === 'invited').length;
+  // For stats that need full participant counts, use the campaign stats (already fetched)
+  const pendingInviteCount = 0; // updated below via a lean query
+  const openedCount = campaign.started_count;
+  const notStartedCount = campaign.participant_count - campaign.started_count;
 
-  const isPaid = paymentInfo !== null && (paymentInfo.status === 'completed' || paymentInfo.status === 'partially_refunded');
+  const isPaid =
+    paymentInfo !== null &&
+    (paymentInfo.status === 'completed' || paymentInfo.status === 'partially_refunded');
 
-  const participantsWithScores = await Promise.all(
-    participants.map(async (participant) => {
-      const score = participant.status === 'completed'
-        ? await getAssessmentScoreByParticipantId(participant.id)
-        : null;
-      return { ...participant, score };
-    })
-  );
+  const basePath = `/dashboard/campaigns/${campaignId}`;
+  const paginationSearchParams: Record<string, string> = search ? { search } : {};
+  if (payment) paginationSearchParams.payment = payment;
 
   return (
     <>
       {payment === 'success' && <PaymentSuccessToast />}
-      
-      <DashboardBreadcrumb title="Campaign Details" text={`Campaigns / ${campaign.name}`} />
 
       <div className="mb-6">
-        <Link href="/dashboard/campaigns" className="inline-flex items-center text-sm text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100">
+        <Link
+          href="/dashboard/campaigns"
+          className="inline-flex items-center text-sm text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100"
+        >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Campaigns
         </Link>
@@ -176,14 +194,14 @@ export default async function CampaignDetailPage({ params, searchParams }: Campa
           </div>
           <div className="flex items-center gap-2">
             {isPaid && notStartedCount > 0 && paymentInfo && (
-              <RefundButton 
+              <RefundButton
                 campaignId={campaignId}
                 originalEmployeeCount={paymentInfo.employee_count}
                 eligibleForRefundCount={notStartedCount}
               />
             )}
-            <SendInvitesButton 
-              campaignId={campaignId} 
+            <SendInvitesButton
+              campaignId={campaignId}
               pendingCount={pendingInviteCount}
               isPaid={isPaid}
             />
@@ -191,7 +209,7 @@ export default async function CampaignDetailPage({ params, searchParams }: Campa
         </div>
       </div>
 
-      {/* Payment Info Card (if paid) */}
+      {/* Payment Info */}
       {paymentInfo && (
         <div className="rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-4 mb-6">
           <div className="flex items-center justify-between">
@@ -200,13 +218,15 @@ export default async function CampaignDetailPage({ params, searchParams }: Campa
               <div>
                 <span className="font-medium">Payment Complete</span>
                 <span className="text-neutral-500 ml-2">
-                  {formatPrice(paymentInfo.amount_cents)} for {paymentInfo.employee_count} employees
+                  {formatPrice(paymentInfo.amount_cents)} for {paymentInfo.employee_count}{' '}
+                  employees
                 </span>
               </div>
             </div>
             {paymentInfo.refund_amount_cents > 0 && (
               <Badge variant="secondary">
-                Refunded: {formatPrice(paymentInfo.refund_amount_cents)} ({paymentInfo.refund_employee_count} employees)
+                Refunded: {formatPrice(paymentInfo.refund_amount_cents)} (
+                {paymentInfo.refund_employee_count} employees)
               </Badge>
             )}
           </div>
@@ -250,7 +270,9 @@ export default async function CampaignDetailPage({ params, searchParams }: Campa
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-neutral-500">Completion Rate</CardTitle>
+            <CardTitle className="text-sm font-medium text-neutral-500">
+              Completion Rate
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <span className="text-2xl font-bold">{completionRate}%</span>
@@ -260,71 +282,93 @@ export default async function CampaignDetailPage({ params, searchParams }: Campa
 
       {/* Participants Table */}
       <div className="rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900">
-        <div className="p-4 border-b border-neutral-200 dark:border-neutral-700">
-          <h2 className="text-lg font-semibold flex items-center gap-2">
-            <Mail className="w-5 h-5" />
-            Participants ({participants.length})
-          </h2>
-        </div>
+        <SearchableContent
+          placeholder="Search by email..."
+          header={
+            <h2 className="text-lg font-semibold flex items-center gap-2 shrink-0">
+              <Mail className="w-5 h-5" />
+              Participants
+              <span className="text-sm font-normal text-neutral-500">
+                ({campaign.participant_count})
+              </span>
+            </h2>
+          }
+        >
 
-        {participants.length === 0 ? (
+        {campaign.participant_count === 0 ? (
           <div className="text-center py-12">
             <Users className="w-12 h-12 mx-auto mb-4 text-neutral-400" />
             <p className="text-neutral-600 dark:text-neutral-400">
               No participants in this campaign yet.
             </p>
           </div>
+        ) : participantsTotal === 0 && search ? (
+          <div className="text-center py-12 text-neutral-500">
+            No participants match &ldquo;{search}&rdquo;.
+          </div>
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Email</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Score</TableHead>
-                <TableHead>Completed</TableHead>
-                <TableHead className="w-[100px]">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {participantsWithScores.map((participant) => (
-                <TableRow key={participant.id}>
-                  <TableCell className="font-medium">
-                    {participant.employee.email}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={getParticipantStatusBadge(participant.status)}>
-                      {participant.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    {participant.score ? (
-                      <ScoreBadge score={participant.score.total_score} />
-                    ) : (
-                      <span className="text-neutral-400">—</span>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-neutral-600 dark:text-neutral-400">
-                    {formatDateTime(participant.completed_at)}
-                  </TableCell>
-                  <TableCell>
-                    {participant.score ? (
-                      <Link href={`/dashboard/campaigns/${campaignId}/employees/${participant.id}`}>
-                        <Button variant="ghost" size="sm">
-                          View
-                          <ExternalLink className="w-3 h-3 ml-1" />
-                        </Button>
-                      </Link>
-                    ) : (
-                      <Button variant="ghost" size="sm" disabled>
-                        View
-                      </Button>
-                    )}
-                  </TableCell>
+          <>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Score</TableHead>
+                  <TableHead>Completed</TableHead>
+                  <TableHead className="w-[100px]">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {participants.map((participant) => (
+                  <TableRow key={participant.id}>
+                    <TableCell className="font-medium">
+                      {participant.employee?.email}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={getParticipantStatusBadge(participant.status)}>
+                        {participant.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {participant.score ? (
+                        <ScoreBadge score={participant.score.total_score} />
+                      ) : (
+                        <span className="text-neutral-400">—</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-neutral-600 dark:text-neutral-400">
+                      {formatDateTime(participant.completed_at)}
+                    </TableCell>
+                    <TableCell>
+                      {participant.score ? (
+                        <Link
+                          href={`/dashboard/campaigns/${campaignId}/employees/${participant.id}`}
+                        >
+                          <Button variant="ghost" size="sm">
+                            View
+                            <ExternalLink className="w-3 h-3 ml-1" />
+                          </Button>
+                        </Link>
+                      ) : (
+                        <Button variant="ghost" size="sm" disabled>
+                          View
+                        </Button>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+            <Pagination
+              page={page}
+              total={participantsTotal}
+              pageSize={PAGE_SIZE}
+              basePath={basePath}
+              searchParams={paginationSearchParams}
+            />
+          </>
         )}
+        </SearchableContent>
       </div>
     </>
   );

@@ -1,5 +1,6 @@
 // Re-export all enums
 export type {
+  CampaignDomain,
   CampaignStatus,
   ParticipantStatus,
   AttemptStatus,

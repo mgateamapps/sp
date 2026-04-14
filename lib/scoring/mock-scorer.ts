@@ -1,4 +1,4 @@
-import { SCENARIOS, getScoreBand } from '@/lib/constants/assessment';
+import { getScenario, getScoreBand } from '@/lib/constants/assessment';
 import type { ScenarioKey } from '@/types';
 import type {
   Scorer,
@@ -207,7 +207,7 @@ function generateCoachingTips(
       break;
   }
 
-  const scenario = SCENARIOS.find((s) => s.key === scenarioKey);
+  const scenario = getScenario(scenarioKey);
   if (scenario) {
     tips.push(`For ${scenario.title.toLowerCase()} tasks, be specific about what makes a good result`);
   }
@@ -219,10 +219,10 @@ function generateImprovedPrompt(
   scenarioKey: ScenarioKey,
   originalText: string
 ): string {
-  const scenario = SCENARIOS.find((s) => s.key === scenarioKey);
+  const scenario = getScenario(scenarioKey);
   if (!scenario) return originalText;
 
-  const improvedPrompts: Record<ScenarioKey, string> = {
+  const improvedPrompts: Partial<Record<ScenarioKey, string>> = {
     summarization: `Please summarize the following document in 3-5 bullet points. Focus on the main ideas and key takeaways. Keep each point concise (1-2 sentences). Ensure the summary captures the document's purpose and conclusions.`,
     email_drafting: `Write a professional email with the following structure: clear subject line suggestion, greeting, main message (2-3 paragraphs), and appropriate sign-off. Maintain a professional but friendly tone. Keep it under 200 words.`,
     action_list: `Extract all action items from the following meeting notes. For each action item, include: the task description, responsible person (if mentioned), and deadline (if mentioned). Format as a numbered list. Flag any urgent items.`,
@@ -230,14 +230,14 @@ function generateImprovedPrompt(
     text_improvement: `Improve the following text for clarity and professionalism. Maintain the original meaning but: fix any grammar issues, improve sentence flow, use more precise vocabulary, and ensure consistent tone. Explain the key changes made.`,
   };
 
-  return improvedPrompts[scenarioKey];
+  return improvedPrompts[scenarioKey] ?? originalText;
 }
 
 function generateScenarioSummary(
   scenarioKey: ScenarioKey,
   totalScore: number
 ): string {
-  const scenario = SCENARIOS.find((s) => s.key === scenarioKey);
+  const scenario = getScenario(scenarioKey);
   const scenarioName = scenario?.title || scenarioKey;
 
   if (totalScore >= 80) {

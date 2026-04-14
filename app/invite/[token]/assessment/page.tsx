@@ -1,6 +1,8 @@
 import { validateInviteToken } from '@/lib/queries/invites';
 import { getOrCreateAttempt } from '@/lib/actions/assessment';
 import { getAttemptWithResponses } from '@/lib/queries/assessment';
+import { SCENARIOS_BY_DOMAIN } from '@/lib/constants/assessment';
+import type { CampaignDomain } from '@/types';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { AssessmentForm } from './assessment-form';
@@ -50,12 +52,16 @@ export default async function AssessmentPage({ params }: AssessmentPageProps) {
 
   const attemptWithResponses = await getAttemptWithResponses(participant.id);
 
+  const domain = (participant.campaign.domain ?? 'other') as CampaignDomain;
+  const scenarios = SCENARIOS_BY_DOMAIN[domain] ?? SCENARIOS_BY_DOMAIN['other'];
+
   return (
     <AssessmentForm
       token={token}
       attemptId={attempt.id}
       initialResponses={attemptWithResponses?.responses || {}}
       campaignName={participant.campaign.name}
+      scenarios={scenarios}
     />
   );
 }

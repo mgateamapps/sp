@@ -1,5 +1,5 @@
 import OpenAI from 'openai';
-import { SCENARIOS, getScoreBand } from '@/lib/constants/assessment';
+import { getScenario, getScoreBand } from '@/lib/constants/assessment';
 import type { ScenarioKey, ScoreBand } from '@/types';
 import type {
   Scorer,
@@ -88,7 +88,7 @@ export class OpenAIScorer implements Scorer {
     const scenarioScores: ScenarioScoringResult[] = [];
 
     for (const response of input.responses) {
-      const scenario = SCENARIOS.find((s) => s.key === response.scenario_key);
+      const scenario = getScenario(response.scenario_key);
       if (!scenario) continue;
 
       const scenarioScore = await this.scoreScenario(

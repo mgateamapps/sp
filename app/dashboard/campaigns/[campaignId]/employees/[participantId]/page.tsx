@@ -1,10 +1,9 @@
-import DashboardBreadcrumb from '@/components/layout/dashboard-breadcrumb';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getCurrentAdminProfile } from '@/lib/queries/admin';
 import { getParticipantById } from '@/lib/queries/campaigns';
 import { getFullAssessmentResultByParticipantId } from '@/lib/queries/scoring';
-import { SCENARIOS, getScoreBand } from '@/lib/constants/assessment';
+import { getScenario, getScoreBand } from '@/lib/constants/assessment';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect, notFound } from 'next/navigation';
@@ -119,11 +118,6 @@ export default async function EmployeeResultPage({
 
   return (
     <>
-      <DashboardBreadcrumb
-        title="Employee Result"
-        text={`${participant.campaign.name} / ${participant.employee.email}`}
-      />
-
       <div className="mb-6">
         <Link
           href={`/dashboard/campaigns/${campaignId}`}
@@ -294,9 +288,7 @@ export default async function EmployeeResultPage({
             <h2 className="text-xl font-semibold">Scenario Breakdown</h2>
 
             {result.scenario_scores.map((scenarioScore) => {
-              const scenario = SCENARIOS.find(
-                (s) => s.key === scenarioScore.scenario_key
-              );
+              const scenario = getScenario(scenarioScore.scenario_key);
               const userResponse =
                 responseMap.get(scenarioScore.scenario_key) || '';
 

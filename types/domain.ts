@@ -1,4 +1,5 @@
 import type {
+  CampaignDomain,
   CampaignStatus,
   ParticipantStatus,
   AttemptStatus,
@@ -50,6 +51,7 @@ export interface Campaign {
   name: string;
   description: string | null;
   status: CampaignStatus;
+  domain: CampaignDomain;
   deadline: string | null;
   created_at: string;
   updated_at: string;

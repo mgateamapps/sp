@@ -8,6 +8,7 @@ import { redirect } from 'next/navigation';
 export interface CreateCampaignInput {
   name: string;
   description?: string;
+  domain?: string;
   deadline?: string;
   employeeEmails: string[];
 }
@@ -38,6 +39,7 @@ export async function createCampaign(formData: FormData): Promise<CreateCampaign
 
   const name = formData.get('name') as string;
   const description = formData.get('description') as string | null;
+  const domain = (formData.get('domain') as string | null) || 'other';
   const deadline = formData.get('deadline') as string | null;
   const emailsRaw = formData.get('emails') as string;
 
@@ -57,6 +59,7 @@ export async function createCampaign(formData: FormData): Promise<CreateCampaign
         organization_id: admin.organization_id,
         name: name.trim(),
         description: description?.trim() || null,
+        domain,
         deadline: deadline || null,
         status: 'draft',
       })

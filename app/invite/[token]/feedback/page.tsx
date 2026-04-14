@@ -1,7 +1,7 @@
 import { validateInviteToken } from '@/lib/queries/invites';
 import { getAttemptByParticipantId } from '@/lib/queries/assessment';
 import { getFullAssessmentResult } from '@/lib/queries/scoring';
-import { SCENARIOS, RUBRIC_CRITERIA, getScoreBand } from '@/lib/constants/assessment';
+import { getScenario, RUBRIC_CRITERIA, getScoreBand } from '@/lib/constants/assessment';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import {
@@ -226,7 +226,7 @@ export default async function FeedbackPage({ params }: FeedbackPageProps) {
         <h2 className="text-xl font-semibold">Scenario Breakdown</h2>
 
         {scenario_scores.map((scenarioScore) => {
-          const scenario = SCENARIOS.find((s) => s.key === scenarioScore.scenario_key);
+          const scenario = getScenario(scenarioScore.scenario_key);
           const userResponse = responseMap.get(scenarioScore.scenario_key) || '';
 
           return (

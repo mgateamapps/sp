@@ -1,4 +1,3 @@
-import DashboardBreadcrumb from "@/components/layout/dashboard-breadcrumb";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -97,8 +96,6 @@ export default async function BillingPage() {
 
   return (
     <>
-      <DashboardBreadcrumb title="Billing" text="Billing" />
-
       {/* Subscription */}
       {subscription ? (
         <SubscriptionCard subscription={subscription} />

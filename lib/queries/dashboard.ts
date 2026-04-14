@@ -319,21 +319,15 @@ export async function getRecentCompletions(
   const campaignIds = campaigns.map((c) => c.id);
   const campaignMap = new Map(campaigns.map((c) => [c.id, c.name]));
 
+  // Fetch exactly the participants we need, ordered by completion date
   const { data: participants } = await supabase
     .from('campaign_participants')
-    .select(
-      `
-      id,
-      campaign_id,
-      completed_at,
-      employee:employees(email)
-    `
-    )
+    .select(`id, campaign_id, completed_at, employee:employees(email)`)
     .in('campaign_id', campaignIds)
     .eq('status', 'completed')
     .not('completed_at', 'is', null)
     .order('completed_at', { ascending: false })
-    .limit(limit * 2);
+    .limit(limit * 3); // slight buffer to account for participants without scored attempts
 
   if (!participants || participants.length === 0) return [];
 
@@ -342,13 +336,12 @@ export async function getRecentCompletions(
   const { data: attempts } = await supabase
     .from('assessment_attempts')
     .select('id, campaign_participant_id')
-    .in('campaign_participant_id', participantIds);
+    .in('campaign_participant_id', participantIds)
+    .eq('status', 'scored');
 
   if (!attempts || attempts.length === 0) return [];
 
-  const attemptMap = new Map(
-    attempts.map((a) => [a.campaign_participant_id, a.id])
-  );
+  const attemptMap = new Map(attempts.map((a) => [a.campaign_participant_id, a.id]));
   const attemptIds = attempts.map((a) => a.id);
 
   const { data: scores } = await supabase
@@ -515,45 +508,50 @@ export async function getTopPerformers(
   );
   const attemptIds = attempts.map((a) => a.id);
 
+  // Fetch top N scores at the database level — no in-memory sorting of thousands of rows
   const { data: scores } = await supabase
     .from('assessment_scores')
     .select('attempt_id, total_score, score_band')
     .in('attempt_id', attemptIds)
-    .order('total_score', { ascending: false });
+    .order('total_score', { ascending: false })
+    .limit(limit);
 
   if (!scores || scores.length === 0) return [];
 
-  const scoreMap = new Map(scores.map((s) => [s.attempt_id, s]));
+  const scoreAttemptIds = scores.map((s) => s.attempt_id);
 
-  const participantsWithScores = participants
-    .map((p) => {
-      const attemptId = attemptMap.get(p.id);
-      if (!attemptId) return null;
+  // Fetch only the participants that correspond to the top scores
+  const topAttempts = attempts.filter((a) => scoreAttemptIds.includes(a.id));
+  const topParticipantIds = topAttempts.map((a) => a.campaign_participant_id);
+  const topParticipants = participants.filter((p) => topParticipantIds.includes(p.id));
 
-      const score = scoreMap.get(attemptId);
-      if (!score) return null;
+  const participantMap = new Map(topParticipants.map((p) => [p.id, p]));
+  const attemptToParticipant = new Map(topAttempts.map((a) => [a.id, a.campaign_participant_id]));
 
-      const employeeData = p.employee as { email: string } | { email: string }[] | null;
-      const employee = Array.isArray(employeeData) ? employeeData[0] : employeeData;
-      if (!employee) return null;
+  const result: TopPerformer[] = [];
 
-      return {
-        id: p.id,
-        employeeEmail: employee.email,
-        campaignName: campaignMap.get(p.campaign_id) || 'Unknown',
-        score: score.total_score,
-        scoreBand: score.score_band as ScoreBand,
-      };
-    })
-    .filter((p): p is NonNullable<typeof p> => p !== null)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, limit)
-    .map((p, index) => ({
-      ...p,
-      rank: index + 1,
-    }));
+  for (const score of scores) {
+    const participantId = attemptToParticipant.get(score.attempt_id);
+    if (!participantId) continue;
 
-  return participantsWithScores;
+    const participant = participantMap.get(participantId);
+    if (!participant) continue;
+
+    const employeeData = participant.employee as { email: string } | { email: string }[] | null;
+    const employee = Array.isArray(employeeData) ? employeeData[0] : employeeData;
+    if (!employee) continue;
+
+    result.push({
+      id: participantId,
+      employeeEmail: employee.email,
+      campaignName: campaignMap.get(participant.campaign_id) || 'Unknown',
+      score: score.total_score,
+      scoreBand: score.score_band as ScoreBand,
+      rank: result.length + 1,
+    });
+  }
+
+  return result;
 }
 
 export async function getCampaignComparison(
