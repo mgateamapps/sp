@@ -216,11 +216,11 @@ export async function getSkillBreakdown(
   );
 
   return {
-    clarity: Math.round(totals.clarity / count),
-    context: Math.round(totals.context / count),
-    constraints: Math.round(totals.constraints / count),
-    outputFormat: Math.round(totals.outputFormat / count),
-    verification: Math.round(totals.verification / count),
+    clarity: Math.round((totals.clarity / count) * 5),
+    context: Math.round((totals.context / count) * 5),
+    constraints: Math.round((totals.constraints / count) * 5),
+    outputFormat: Math.round((totals.outputFormat / count) * 5),
+    verification: Math.round((totals.verification / count) * 5),
   };
 }
 
@@ -439,27 +439,27 @@ export async function getCommonWeaknesses(
     {
       criterion: 'clarity',
       label: 'Clarity',
-      averageScore: Math.round(totals.clarity / count),
+      averageScore: Math.round((totals.clarity / count) * 5),
     },
     {
       criterion: 'context',
       label: 'Context',
-      averageScore: Math.round(totals.context / count),
+      averageScore: Math.round((totals.context / count) * 5),
     },
     {
       criterion: 'constraints',
       label: 'Constraints',
-      averageScore: Math.round(totals.constraints / count),
+      averageScore: Math.round((totals.constraints / count) * 5),
     },
     {
       criterion: 'outputFormat',
       label: 'Output Format',
-      averageScore: Math.round(totals.outputFormat / count),
+      averageScore: Math.round((totals.outputFormat / count) * 5),
     },
     {
       criterion: 'verification',
-      label: 'Verification',
-      averageScore: Math.round(totals.verification / count),
+      label: 'Specificity',
+      averageScore: Math.round((totals.verification / count) * 5),
     },
   ];
 
@@ -764,6 +764,173 @@ export async function getEmployeeProgressHistory(
     .slice(0, limit);
 
   return employeesWithMultiple;
+}
+
+export interface NeedsAttentionEmployee {
+  id: string;
+  participantId: string;
+  campaignId: string;
+  employeeEmail: string;
+  campaignName: string;
+  score: number;
+  scoreBand: ScoreBand;
+  weakestCriterion: string;
+  weakestScore: number;
+  secondWeakestCriterion: string;
+}
+
+export async function getNeedsAttention(
+  organizationId: string,
+  limit: number = 15
+): Promise<NeedsAttentionEmployee[]> {
+  const supabase = await createClient();
+
+  const { data: campaigns } = await supabase
+    .from('campaigns')
+    .select('id, name')
+    .eq('organization_id', organizationId);
+
+  if (!campaigns || campaigns.length === 0) return [];
+
+  const campaignIds = campaigns.map((c) => c.id);
+  const campaignMap = new Map(campaigns.map((c) => [c.id, c.name]));
+
+  const { data: participants } = await supabase
+    .from('campaign_participants')
+    .select('id, campaign_id, employee:employees(email)')
+    .in('campaign_id', campaignIds)
+    .eq('status', 'completed');
+
+  if (!participants || participants.length === 0) return [];
+
+  const participantIds = participants.map((p) => p.id);
+
+  const { data: attempts } = await supabase
+    .from('assessment_attempts')
+    .select('id, campaign_participant_id')
+    .in('campaign_participant_id', participantIds)
+    .eq('status', 'scored');
+
+  if (!attempts || attempts.length === 0) return [];
+
+  const attemptIds = attempts.map((a) => a.id);
+  const attemptToParticipant = new Map(attempts.map((a) => [a.id, a.campaign_participant_id]));
+
+  const { data: scores } = await supabase
+    .from('assessment_scores')
+    .select(
+      'attempt_id, total_score, score_band, clarity_score, context_score, constraints_score, output_format_score, verification_score'
+    )
+    .in('attempt_id', attemptIds)
+    .in('score_band', ['at_risk', 'basic'])
+    .order('total_score', { ascending: true })
+    .limit(limit);
+
+  if (!scores || scores.length === 0) return [];
+
+  const participantMap = new Map(participants.map((p) => [p.id, p]));
+
+  const results: NeedsAttentionEmployee[] = [];
+  for (const score of scores) {
+    const participantId = attemptToParticipant.get(score.attempt_id);
+    if (!participantId) continue;
+
+    const participant = participantMap.get(participantId);
+    if (!participant) continue;
+
+    const employeeData = participant.employee as { email: string } | { email: string }[] | null;
+    const employee = Array.isArray(employeeData) ? employeeData[0] : employeeData;
+    if (!employee) continue;
+
+    const criteria = [
+      { name: 'Clarity', score: score.clarity_score },
+      { name: 'Context', score: score.context_score },
+      { name: 'Constraints', score: score.constraints_score },
+      { name: 'Output Format', score: score.output_format_score },
+      { name: 'Specificity', score: score.verification_score },
+    ].sort((a, b) => a.score - b.score);
+
+    results.push({
+      id: score.attempt_id,
+      participantId,
+      campaignId: participant.campaign_id,
+      employeeEmail: employee.email,
+      campaignName: campaignMap.get(participant.campaign_id) ?? 'Unknown',
+      score: score.total_score,
+      scoreBand: score.score_band as ScoreBand,
+      weakestCriterion: criteria[0].name,
+      weakestScore: criteria[0].score,
+      secondWeakestCriterion: criteria[1].name,
+    });
+  }
+
+  return results;
+}
+
+export interface CoachingTheme {
+  tip: string;
+  count: number;
+}
+
+export async function getTopCoachingThemes(
+  organizationId: string,
+  campaignId?: string,
+  limit: number = 5
+): Promise<CoachingTheme[]> {
+  const supabase = await createClient();
+
+  let campaignIds: string[];
+  if (campaignId) {
+    campaignIds = [campaignId];
+  } else {
+    const { data: campaigns } = await supabase
+      .from('campaigns')
+      .select('id')
+      .eq('organization_id', organizationId);
+    if (!campaigns || campaigns.length === 0) return [];
+    campaignIds = campaigns.map((c) => c.id);
+  }
+
+  const { data: participants } = await supabase
+    .from('campaign_participants')
+    .select('id')
+    .in('campaign_id', campaignIds)
+    .eq('status', 'completed');
+
+  if (!participants || participants.length === 0) return [];
+
+  const { data: attempts } = await supabase
+    .from('assessment_attempts')
+    .select('id')
+    .in('campaign_participant_id', participants.map((p) => p.id))
+    .eq('status', 'scored');
+
+  if (!attempts || attempts.length === 0) return [];
+
+  // Fetch coaching_tips_json from scenario_scores — one source of AI-generated text
+  const { data: scenarioScores } = await supabase
+    .from('scenario_scores')
+    .select('coaching_tips_json')
+    .in('attempt_id', attempts.map((a) => a.id));
+
+  if (!scenarioScores || scenarioScores.length === 0) return [];
+
+  // Flatten and count tip frequency
+  const tipCounts = new Map<string, number>();
+  for (const row of scenarioScores) {
+    const tips: string[] = Array.isArray(row.coaching_tips_json) ? row.coaching_tips_json : [];
+    for (const tip of tips) {
+      const normalised = tip.trim();
+      if (normalised) {
+        tipCounts.set(normalised, (tipCounts.get(normalised) ?? 0) + 1);
+      }
+    }
+  }
+
+  return Array.from(tipCounts.entries())
+    .map(([tip, count]) => ({ tip, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, limit);
 }
 
 export async function getScoreTrend(

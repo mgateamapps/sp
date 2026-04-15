@@ -493,3 +493,77 @@ html[layout="boron"] .dashboard-sidebar-container {
 }
 
 /* ======================================= Layout Css End ================================== */
+
+/* ======================================= Print / PDF Styles ================================== */
+@media print {
+  /* Ensure backgrounds and colors print accurately */
+  *,
+  *::before,
+  *::after {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Hide dashboard chrome: sidebar, top header, footer */
+  aside,
+  header.dashboard-header,
+  footer.d-footer {
+    display: none !important;
+  }
+
+  /* Hide any element explicitly marked as print-only hidden */
+  [data-print-hide="true"] {
+    display: none !important;
+  }
+
+  /* White background throughout */
+  body,
+  .dashboard-body,
+  .dashboard-body-wrapper {
+    background: white !important;
+    color: black !important;
+  }
+
+  .dashboard-body {
+    padding: 0 !important;
+  }
+
+  /* Cards: remove shadows, keep borders, avoid page splits */
+  .card,
+  [class*="rounded-lg border"] {
+    box-shadow: none !important;
+    border: 1px solid #d1d5db !important;
+    break-inside: avoid;
+  }
+
+  /* Prevent orphaned headings */
+  h1, h2, h3, h4 {
+    break-after: avoid;
+  }
+
+  /* Scenario cards each start on a new section if needed */
+  .scenario-card {
+    break-inside: avoid;
+    margin-bottom: 1rem;
+  }
+
+  /* Progress bars — keep coloring */
+  .bg-primary { background-color: #3b82f6 !important; }
+  .bg-green-500 { background-color: #22c55e !important; }
+  .bg-teal-500 { background-color: #14b8a6 !important; }
+  .bg-blue-500 { background-color: #3b82f6 !important; }
+  .bg-amber-500 { background-color: #f59e0b !important; }
+  .bg-red-500 { background-color: #ef4444 !important; }
+
+  /* Remove link styling */
+  a {
+    color: inherit !important;
+    text-decoration: none !important;
+  }
+
+  /* Feedback page minimal layout — no chrome to hide */
+  .min-h-screen {
+    min-height: 0 !important;
+  }
+}
+/* ======================================= Print / PDF Styles End ============================== */

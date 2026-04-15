@@ -1,9 +1,10 @@
 import {
-  ChartPie,
   House,
   Settings,
   FolderKanban,
   Wallet,
+  Users,
+  BarChart3,
 } from "lucide-react";
 
 export const data = {
@@ -21,9 +22,15 @@ export const data = {
       isActive: true,
     },
     {
-      title: "Summary",
-      url: "/dashboard/summary",
-      icon: ChartPie,
+      title: "People",
+      url: "/dashboard/people",
+      icon: Users,
+      isActive: true,
+    },
+    {
+      title: "Insights",
+      url: "/dashboard/insights",
+      icon: BarChart3,
       isActive: true,
     },
     {

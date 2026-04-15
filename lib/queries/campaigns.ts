@@ -1,11 +1,23 @@
 import { createClient } from '@/lib/supabase/server';
-import type { Campaign, CampaignParticipant, Employee, ParticipantWithEmployee, ScoreBand } from '@/types';
+import type { Campaign, CampaignParticipant, Employee, ParticipantWithEmployee, ScoreBand, ScenarioKey } from '@/types';
+import { getScenario } from '@/lib/constants/assessment';
 export type { ParticipantWithEmployee } from '@/types';
 
 export interface CampaignWithStats extends Campaign {
   participant_count: number;
   started_count: number;
   completed_count: number;
+  average_score: number | null;
+  score_distribution: { band: ScoreBand; count: number }[];
+}
+
+export interface ScenarioBreakdown {
+  scenarioKey: string;
+  scenarioTitle: string;
+  averageScore: number;
+  completedCount: number;
+  hardestCriterion: string;
+  hardestCriterionAvg: number;
 }
 
 export interface ParticipantWithScore extends CampaignParticipant {
@@ -101,7 +113,7 @@ export async function getCampaignWithStats(campaignId: string): Promise<Campaign
 
   const { data: participants } = await supabase
     .from('campaign_participants')
-    .select('status')
+    .select('id, status')
     .eq('campaign_id', campaignId);
 
   const participantCount = participants?.length || 0;
@@ -109,12 +121,126 @@ export async function getCampaignWithStats(campaignId: string): Promise<Campaign
     participants?.filter((p) => p.status === 'started' || p.status === 'completed').length || 0;
   const completedCount = participants?.filter((p) => p.status === 'completed').length || 0;
 
+  let average_score: number | null = null;
+  let score_distribution: { band: ScoreBand; count: number }[] = [];
+
+  const completedIds = participants?.filter((p) => p.status === 'completed').map((p) => p.id) ?? [];
+  if (completedIds.length > 0) {
+    const { data: attempts } = await supabase
+      .from('assessment_attempts')
+      .select('id')
+      .in('campaign_participant_id', completedIds)
+      .eq('status', 'scored');
+
+    if (attempts && attempts.length > 0) {
+      const { data: scores } = await supabase
+        .from('assessment_scores')
+        .select('total_score, score_band')
+        .in('attempt_id', attempts.map((a) => a.id));
+
+      if (scores && scores.length > 0) {
+        average_score = Math.round(scores.reduce((sum, s) => sum + s.total_score, 0) / scores.length);
+
+        const distMap = new Map<ScoreBand, number>();
+        for (const s of scores) {
+          const band = s.score_band as ScoreBand;
+          distMap.set(band, (distMap.get(band) ?? 0) + 1);
+        }
+        const bandOrder: ScoreBand[] = ['expert', 'strong', 'functional', 'basic', 'at_risk'];
+        score_distribution = bandOrder.map((band) => ({ band, count: distMap.get(band) ?? 0 }));
+      }
+    }
+  }
+
   return {
     ...campaign,
     participant_count: participantCount,
     started_count: startedCount,
     completed_count: completedCount,
+    average_score,
+    score_distribution,
   } as CampaignWithStats;
+}
+
+export async function getCampaignScenarioBreakdown(
+  campaignId: string
+): Promise<ScenarioBreakdown[]> {
+  const supabase = await createClient();
+
+  const { data: participants } = await supabase
+    .from('campaign_participants')
+    .select('id')
+    .eq('campaign_id', campaignId)
+    .eq('status', 'completed');
+
+  if (!participants || participants.length === 0) return [];
+
+  const { data: attempts } = await supabase
+    .from('assessment_attempts')
+    .select('id')
+    .in('campaign_participant_id', participants.map((p) => p.id))
+    .eq('status', 'scored');
+
+  if (!attempts || attempts.length === 0) return [];
+
+  const { data: scenarioScores } = await supabase
+    .from('scenario_scores')
+    .select(
+      'scenario_key, scenario_score, clarity_score, context_score, constraints_score, output_format_score, verification_score'
+    )
+    .in('attempt_id', attempts.map((a) => a.id));
+
+  if (!scenarioScores || scenarioScores.length === 0) return [];
+
+  type ScenarioAgg = {
+    totalScore: number;
+    clarity: number;
+    context: number;
+    constraints: number;
+    outputFormat: number;
+    verification: number;
+    count: number;
+  };
+  const grouped = new Map<string, ScenarioAgg>();
+
+  for (const s of scenarioScores) {
+    const existing = grouped.get(s.scenario_key) ?? {
+      totalScore: 0, clarity: 0, context: 0, constraints: 0, outputFormat: 0, verification: 0, count: 0,
+    };
+    existing.totalScore += s.scenario_score;
+    existing.clarity += s.clarity_score;
+    existing.context += s.context_score;
+    existing.constraints += s.constraints_score;
+    existing.outputFormat += s.output_format_score;
+    existing.verification += s.verification_score;
+    existing.count++;
+    grouped.set(s.scenario_key, existing);
+  }
+
+  const results: ScenarioBreakdown[] = [];
+  for (const [key, data] of grouped) {
+    const { count } = data;
+    const criteria = [
+      { name: 'Clarity', avg: data.clarity / count },
+      { name: 'Context', avg: data.context / count },
+      { name: 'Constraints', avg: data.constraints / count },
+      { name: 'Output Format', avg: data.outputFormat / count },
+      { name: 'Specificity', avg: data.verification / count },
+    ];
+    const hardest = criteria.reduce((min, c) => (c.avg < min.avg ? c : min), criteria[0]);
+    const scenario = getScenario(key as ScenarioKey);
+
+    results.push({
+      scenarioKey: key,
+      scenarioTitle: scenario?.title ?? key,
+      averageScore: Math.round(data.totalScore / count),
+      completedCount: count,
+      hardestCriterion: hardest.name,
+      hardestCriterionAvg: Math.round(hardest.avg),
+    });
+  }
+
+  return results.sort((a, b) => a.averageScore - b.averageScore);
 }
 
 // ─── Participants (paginated, with scores joined) ─────────────────────────────
@@ -125,14 +251,16 @@ export async function getCampaignParticipantsPaginated(
     page = 1,
     pageSize = 50,
     search = '',
-  }: { page?: number; pageSize?: number; search?: string } = {}
+    status = '',
+    band = '',
+  }: { page?: number; pageSize?: number; search?: string; status?: string; band?: string } = {}
 ): Promise<{ participants: ParticipantWithScore[]; total: number }> {
   const supabase = await createClient();
   const from = (page - 1) * pageSize;
   const to = from + pageSize - 1;
 
+  // Filter by employee email search
   let employeeIds: string[] | null = null;
-
   if (search) {
     const { data: matchingEmployees } = await supabase
       .from('employees')
@@ -143,6 +271,32 @@ export async function getCampaignParticipantsPaginated(
     if (employeeIds.length === 0) {
       return { participants: [], total: 0 };
     }
+  }
+
+  // Filter by score band: pre-query to get matching participant IDs
+  let bandParticipantIds: string[] | null = null;
+  if (band) {
+    const { data: allForCampaign } = await supabase
+      .from('campaign_participants')
+      .select('id')
+      .eq('campaign_id', campaignId);
+
+    const allIds = allForCampaign?.map((p) => p.id) ?? [];
+    if (allIds.length === 0) return { participants: [], total: 0 };
+
+    const { data: attempts } = await supabase
+      .from('assessment_attempts')
+      .select('campaign_participant_id, assessment_scores(score_band)')
+      .in('campaign_participant_id', allIds);
+
+    bandParticipantIds = (attempts ?? [])
+      .filter((a) => {
+        const scores = a.assessment_scores as { score_band: string }[] | null;
+        return scores?.[0]?.score_band === band;
+      })
+      .map((a) => a.campaign_participant_id);
+
+    if (bandParticipantIds.length === 0) return { participants: [], total: 0 };
   }
 
   let query = supabase
@@ -164,6 +318,12 @@ export async function getCampaignParticipantsPaginated(
 
   if (employeeIds !== null) {
     query = query.in('employee_id', employeeIds);
+  }
+  if (status) {
+    query = query.eq('status', status);
+  }
+  if (bandParticipantIds !== null) {
+    query = query.in('id', bandParticipantIds);
   }
 
   const { data, error, count } = await query.range(from, to);

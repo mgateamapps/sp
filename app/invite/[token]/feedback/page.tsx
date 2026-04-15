@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { PrintButton } from '@/components/ui/print-button';
 
 export const metadata: Metadata = {
   title: 'Your Results | ScorePrompt',
@@ -27,13 +28,13 @@ interface FeedbackPageProps {
 }
 
 
-function CriterionBar({ label, score, max = 100 }: { label: string; score: number; max?: number }) {
-  const percentage = (score / max) * 100;
+function CriterionBar({ label, score, max = 20 }: { label: string; score: number; max?: number }) {
+  const percentage = Math.round((score / max) * 100);
   return (
     <div className="space-y-1">
       <div className="flex justify-between text-sm">
         <span>{label}</span>
-        <span className="text-neutral-500">{score}%</span>
+        <span className="text-neutral-500">{percentage}%</span>
       </div>
       <div className="h-2 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden">
         <div
@@ -73,6 +74,11 @@ export default async function FeedbackPage({ params }: FeedbackPageProps) {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
+      {/* Print button — hidden on print */}
+      <div className="flex justify-end">
+        <PrintButton />
+      </div>
+
       {/* Header */}
       <div className="text-center mb-8">
         <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
@@ -119,7 +125,7 @@ export default async function FeedbackPage({ params }: FeedbackPageProps) {
               score={assessment_score.output_format_score}
             />
             <CriterionBar
-              label="Verification"
+              label="Specificity"
               score={assessment_score.verification_score}
             />
           </div>
@@ -215,7 +221,7 @@ export default async function FeedbackPage({ params }: FeedbackPageProps) {
           const userResponse = responseMap.get(scenarioScore.scenario_key) || '';
 
           return (
-            <Card key={scenarioScore.scenario_key}>
+            <Card key={scenarioScore.scenario_key} className="scenario-card">
               <CardHeader>
                 <div className="flex justify-between items-start">
                   <div>
@@ -255,7 +261,7 @@ export default async function FeedbackPage({ params }: FeedbackPageProps) {
                     <div className="font-semibold">{scenarioScore.output_format_score}/20</div>
                   </div>
                   <div>
-                    <div className="text-neutral-500">Verification</div>
+                    <div className="text-neutral-500">Specificity</div>
                     <div className="font-semibold">{scenarioScore.verification_score}/20</div>
                   </div>
                 </div>

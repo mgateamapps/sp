@@ -5,6 +5,7 @@ import { getParticipantById } from '@/lib/queries/campaigns';
 import { getFullAssessmentResultByParticipantId } from '@/lib/queries/scoring';
 import { getScenario, getScoreBand } from '@/lib/constants/assessment';
 import { ScoreBadge } from '@/components/ui/score-badge';
+import { PrintButton } from '@/components/ui/print-button';
 import { formatDateTime } from '@/lib/utils/formatting';
 import type { Metadata } from 'next';
 import Link from 'next/link';
@@ -33,18 +34,18 @@ interface EmployeeResultPageProps {
 function CriterionBar({
   label,
   score,
-  max = 100,
+  max = 20,
 }: {
   label: string;
   score: number;
   max?: number;
 }) {
-  const percentage = (score / max) * 100;
+  const percentage = Math.round((score / max) * 100);
   return (
     <div className="space-y-1">
       <div className="flex justify-between text-sm">
         <span>{label}</span>
-        <span className="text-neutral-500">{score}%</span>
+        <span className="text-neutral-500">{percentage}%</span>
       </div>
       <div className="h-2 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden">
         <div
@@ -88,7 +89,7 @@ export default async function EmployeeResultPage({
 
   return (
     <>
-      <div className="mb-6">
+      <div className="mb-6 flex items-center justify-between">
         <Link
           href={`/dashboard/campaigns/${campaignId}`}
           className="inline-flex items-center text-sm text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100"
@@ -96,6 +97,7 @@ export default async function EmployeeResultPage({
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Campaign
         </Link>
+        {result && <PrintButton />}
       </div>
 
       {/* Employee Header */}
@@ -188,7 +190,7 @@ export default async function EmployeeResultPage({
                   score={result.assessment_score.output_format_score}
                 />
                 <CriterionBar
-                  label="Verification"
+                  label="Specificity"
                   score={result.assessment_score.verification_score}
                 />
               </div>
@@ -263,7 +265,7 @@ export default async function EmployeeResultPage({
                 responseMap.get(scenarioScore.scenario_key) || '';
 
               return (
-                <Card key={scenarioScore.scenario_key}>
+                <Card key={scenarioScore.scenario_key} className="scenario-card">
                   <CardHeader>
                     <div className="flex justify-between items-start">
                       <div>
@@ -315,7 +317,7 @@ export default async function EmployeeResultPage({
                         </div>
                       </div>
                       <div>
-                        <div className="text-neutral-500">Verification</div>
+                        <div className="text-neutral-500">Specificity</div>
                         <div className="font-semibold">
                           {scenarioScore.verification_score}/20
                         </div>

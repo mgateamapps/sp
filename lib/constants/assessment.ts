@@ -460,43 +460,43 @@ const OTHER_SCENARIOS: ScenarioDefinition[] = [
 ];
 
 // ============================================================================
-// LEGACY GENERIC SCENARIOS (kept for backward compatibility)
+// LEGACY GENERIC SCENARIOS (kept for backward compatibility — keys must not change)
 // ============================================================================
 export const SCENARIOS: ScenarioDefinition[] = [
   {
     key: 'summarization',
-    title: 'Summarization',
-    description: 'Summarize a document or text',
+    title: 'Conflicting Quarterly Reports Synthesis',
+    description: 'Synthesise four inconsistent department reports into a coherent executive briefing',
     instruction:
-      'You will be given a document. Write a prompt that would help an AI assistant summarize it effectively.',
+      'You have received Q3 reports from four departments: Finance (showing a $420K budget overrun attributed to one-time infrastructure costs), Sales (reporting 108% of quota but noting that $1.1M of closed deals are at risk of churn within 90 days), Product (celebrating a major feature launch that, according to Engineering\'s separate note, shipped with 14 known defects and is generating 3× normal support volume), and Operations (flagging a supplier delay that will affect Q4 delivery capacity by an estimated 22%). Each report uses different definitions for key metrics, was written for a different audience, and has a different level of candour. The CEO needs a single-page executive briefing before a board call in 4 hours. Write a prompt that will help an AI synthesise these conflicting inputs: reconcile the metric inconsistencies, surface the two or three issues that most need board attention, present the situation honestly without alarm or spin, and flag the open questions that the CEO will almost certainly be asked that cannot yet be answered from the data available.',
   },
   {
     key: 'email_drafting',
-    title: 'Email Drafting',
-    description: 'Draft a professional email',
+    title: 'High-Stakes Failure Communication',
+    description: 'Draft a client communication that is honest about a significant delivery failure',
     instruction:
-      'You need to write a professional email. Write a prompt that would help an AI assistant draft it for you.',
+      'You are two weeks past a committed project delivery date for a $340K contract. The cause: a key dependency on a third-party data provider failed in a way your team did not anticipate, and internal escalation processes did not catch the risk early enough. The client — a VP of Operations at a logistics company — has sent two unanswered follow-up emails and left a voicemail your account manager described as "short and cold." You now have a revised delivery date (10 more days), a root cause analysis, and a plan to prevent recurrence. The client relationship has historically been strong (4 years, two renewals), but this is the second timeline slip in 18 months. Write a prompt that will help an AI draft a communication that: opens with a direct acknowledgement of the failure without deflecting blame, provides the root cause in plain language without technical jargon that obscures accountability, presents the revised timeline with the specific changes that make it credible, proposes a goodwill gesture that is proportionate without setting a precedent, and ends with a clear call to action — all in a tone that is professional and honest rather than either defensive or excessively apologetic.',
   },
   {
     key: 'action_list',
-    title: 'Action List Extraction',
-    description: 'Extract action items from meeting notes',
+    title: 'Executive Meeting Decision Extraction',
+    description: 'Extract clear decisions, owners, and deadlines from a chaotic 2-hour strategy meeting',
     instruction:
-      'You have meeting notes and need to extract action items. Write a prompt that would help an AI assistant identify and list them.',
+      'You have a transcript from a 2-hour executive strategy meeting with 8 participants. The meeting covered three agenda items: a proposed market expansion, a headcount freeze debate, and a response to a competitor\'s product launch. The transcript has problems: three participants talked over each other in key moments, two decisions were made implicitly and never explicitly confirmed, the CEO contradicted herself between hour 1 and hour 2 on the headcount question, and two action items were mentioned only in passing ("someone should look into that") without names or timelines attached. The meeting ended with "let\'s align async before Friday." You need to circulate a decision log and action register by end of day. Write a prompt that will help an AI process this transcript: identify every decision made (including implicit ones) with a confidence rating, extract every action item with a proposed owner and deadline (noting where these are inferred vs. explicit), flag the contradictions and ambiguities that need human resolution before the document can be circulated, and produce the output in a format that can be pasted directly into the meeting notes system with no manual reformatting.',
   },
   {
     key: 'comparison',
-    title: 'Comparison Analysis',
-    description: 'Compare two options or alternatives',
+    title: 'Strategic Framework Evaluation Under Real Constraints',
+    description: 'Evaluate three strategic frameworks against specific organisational constraints to recommend one',
     instruction:
-      'You need to compare two options. Write a prompt that would help an AI assistant create a useful comparison.',
+      'Your leadership team is debating which goal-setting framework to adopt across a 250-person company: OKRs, a Balanced Scorecard approach, or a simplified quarterly priorities model. Each has been championed by a different executive. Complicating factors: your company runs 4 very different business units (a product team, a services team, a sales org, and a shared operations function) with fundamentally different work rhythms; your managers have an average of 18 months of management experience; your previous OKR implementation 2 years ago was abandoned after one quarter (you have post-mortem notes on why); and you have a 90-day window before the next planning cycle where any new framework needs to be operational. You have read about all three frameworks but have no direct implementation experience with two of them. Write a prompt that will help an AI produce a comparative evaluation that: assesses each framework against your specific constraints (not generic pros/cons), uses the post-mortem data from the failed OKR attempt as evidence, recommends one framework with a clear rationale, and identifies the top 3 implementation risks for the recommended option along with specific mitigations.',
   },
   {
     key: 'text_improvement',
-    title: 'Text Improvement',
-    description: 'Improve or rewrite existing text',
+    title: 'Support-Generating Documentation Restructuring',
+    description: 'Restructure user documentation that is generating excessive support tickets',
     instruction:
-      'You have text that needs improvement. Write a prompt that would help an AI assistant enhance it.',
+      'Your product\'s onboarding documentation is generating approximately 180 support tickets per month — 40% of total ticket volume. Analysis shows 3 articles account for 70% of those tickets: the "Connecting your first integration" article (users can\'t find the API key location), the "Setting up team permissions" article (users grant too-broad permissions then can\'t undo them without admin help), and the "Billing and plan changes" article (users don\'t understand the difference between plan changes and seat additions, leading to accidental overcharges). Each article was written by a different person, has a different structure, and was last updated at different times. You have the current articles, the specific questions customers ask in the tickets, session recordings showing exactly where users get confused, and an updated UI (the screenshots in two articles are outdated). Write a prompt that will help an AI restructure and rewrite all three articles in a single pass: establish a consistent template across all three, rewrite each in plain language that a non-technical user would understand, add decision-tree logic for the permissions article where user path depends on their role, replace the outdated UI references with text-only instructions that will not become stale, and include a "Common mistakes" section for each article based on the ticket data — with the goal of reducing tickets for these three articles by at least 50%.',
   },
 ] as const;
 
@@ -568,8 +568,8 @@ export const RUBRIC_CRITERIA: RubricCriterionDefinition[] = [
   },
   {
     key: 'verification',
-    label: 'Verification',
-    description: 'The prompt includes ways to verify or validate the output',
+    label: 'Specificity',
+    description: 'The prompt forces specific, actionable output rather than generic advice',
     weight: 1,
   },
 ] as const;
