@@ -47,7 +47,7 @@ const LoginForm = () => {
         toast.error(error.message)
       } else {
         toast.success('Login successful!')
-        router.push('/dashboard')
+        router.push('/app/campaigns')
         router.refresh()
       }
     } catch (error) {

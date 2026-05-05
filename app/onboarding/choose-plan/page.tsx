@@ -18,7 +18,7 @@ export default function ChoosePlanPage() {
 
   async function handleContinue() {
     if (selectedPackId === 'free' || !selectedPackId) {
-      router.push('/dashboard');
+      router.push('/app/campaigns');
       return;
     }
 
@@ -121,7 +121,7 @@ export default function ChoosePlanPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold mb-0.5">{formatPrice(pack.price_cents)}</div>
-                <p className="text-xs text-neutral-500 mb-3">{pack.credits} credits · {formatPrice(Math.round(getPricePerCredit(pack)))} each</p>
+                <p className="text-xs text-neutral-500 mb-3">{pack.credits} assessments · {formatPrice(Math.round(getPricePerCredit(pack)))} each</p>
                 <ul className="space-y-1.5 text-sm">
                   <li className="flex items-center gap-2">
                     <CheckCircle className="w-4 h-4 text-green-500 shrink-0" />
@@ -156,7 +156,7 @@ export default function ChoosePlanPage() {
             ) : (
               <>
                 {selectedPackId === 'free' || !selectedPackId
-                  ? 'Continue to Dashboard'
+                  ? 'Continue to Campaigns'
                   : 'Continue to Payment'}
                 <ArrowRight className="w-4 h-4 ml-2" />
               </>
@@ -166,8 +166,8 @@ export default function ChoosePlanPage() {
 
         <p className="text-center text-sm text-neutral-500 mt-6">
           Not sure yet?{' '}
-          <Link href="/dashboard" className="text-primary hover:underline">
-            Skip and buy credits later
+          <Link href="/app/campaigns" className="text-primary hover:underline">
+            Skip and buy assessments later
           </Link>
         </p>
       </main>

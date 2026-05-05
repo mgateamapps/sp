@@ -61,7 +61,7 @@ export async function GET(_req: NextRequest, { params }: RouteContext) {
       'Context (/20)',
       'Constraints (/20)',
       'Output Format (/20)',
-      'Specificity (/20)',
+      'Verification (/20)',
       'Invited At',
       'Completed At',
     ]

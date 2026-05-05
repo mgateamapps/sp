@@ -64,8 +64,8 @@ async function Header() {
             Pricing
           </Link>
           {user ? (
-            <Link href="/dashboard">
-              <Button size="sm">Go to Dashboard</Button>
+            <Link href="/app/campaigns">
+              <Button size="sm">Go to Campaigns</Button>
             </Link>
           ) : (
             <>
@@ -83,8 +83,8 @@ async function Header() {
         </nav>
         <div className="md:hidden">
           {user ? (
-            <Link href="/dashboard">
-              <Button size="sm">Dashboard</Button>
+            <Link href="/app/campaigns">
+              <Button size="sm">Campaigns</Button>
             </Link>
           ) : (
             <Link href="/auth/register">
@@ -123,9 +123,9 @@ function HeroSection({ isLoggedIn }: { isLoggedIn: boolean }) {
             <div className="flex flex-wrap gap-4 mb-10">
               {isLoggedIn ? (
                 <>
-                  <Link href="/dashboard">
+                  <Link href="/app/campaigns">
                     <Button size="lg" className="text-base px-8">
-                      Go to Dashboard
+                      Go to Campaigns
                       <ArrowRight className="w-4 h-4 ml-2" />
                     </Button>
                   </Link>
@@ -198,7 +198,7 @@ function HeroSection({ isLoggedIn }: { isLoggedIn: boolean }) {
                     { label: 'Clarity', value: 74 },
                     { label: 'Context', value: 61 },
                     { label: 'Constraints', value: 58 },
-                    { label: 'Output format', value: 72 },
+                    { label: 'Output Format', value: 72 },
                     { label: 'Verification', value: 55 },
                   ].map((skill) => (
                     <div key={skill.label} className="mb-2.5">
@@ -381,7 +381,7 @@ function TryItSection({ isLoggedIn }: { isLoggedIn: boolean }) {
             <p className="text-sm text-slate-400">
               {isLoggedIn
                 ? 'A personal test campaign is created instantly. Invite link goes to your email.'
-                : 'Free account includes 5 test credits. No credit card required.'}
+                : 'Free account includes 5 test assessments. No credit card required.'}
             </p>
           </div>
 
@@ -521,13 +521,12 @@ function WhatIsAssessedSection() {
       description: 'Does it define rules, boundaries, or expectations?',
     },
     {
-      label: 'Output format',
+      label: 'Output Format',
       description: 'Does it specify how the answer should be structured?',
     },
     {
-      label: 'Verification mindset',
-      description:
-        'Does it show awareness of checking, validating, or improving the output?',
+      label: 'Verification',
+      description: 'Does it define how outputs should be checked, validated, or improved?',
     },
   ];
 
@@ -589,7 +588,7 @@ function WhatIsAssessedSection() {
   );
 }
 
-function DashboardPreviewSection() {
+function CampaignDetailPreviewSection() {
   const weaknesses = [
     'Missing output format',
     'Prompts too vague',
@@ -624,7 +623,7 @@ function DashboardPreviewSection() {
       <div className="max-w-6xl mx-auto px-4">
         <div className="text-center mb-16">
           <span className="inline-block px-3 py-1 text-xs font-medium bg-primary/10 text-primary rounded-full mb-4">
-            Dashboard Preview
+            Campaign Detail Preview
           </span>
           <h2 className="text-3xl md:text-4xl font-bold mb-4 text-heading dark:text-white">
             Built for fast management insight
@@ -786,7 +785,7 @@ function FAQSection() {
     {
       question: 'How are responses scored?',
       answer:
-        'Each prompt response is evaluated by AI across 5 criteria: clarity, context, constraints, output format, and verification mindset. Scores are normalized to a 0–100 scale.',
+        'Each prompt response is evaluated by AI across 5 criteria: Clarity, Context, Constraints, Output Format, and Verification. Scores are normalized to a 0–100 scale.',
     },
     {
       question: 'Can we run this again later?',
@@ -796,7 +795,7 @@ function FAQSection() {
     {
       question: 'How does billing work?',
       answer:
-        'ScorePrompt uses a credit system. 1 credit = 1 employee who completes an assessment. You only pay for completions — not invites. Credits never expire.',
+        'ScorePrompt uses a usage-based model. 1 assessment = 1 employee who completes an assessment. You only pay for completions — not invites. Assessments never expire.',
     },
   ];
 
@@ -862,7 +861,7 @@ function FinalCTASection({ isLoggedIn }: { isLoggedIn: boolean }) {
         <div className="flex flex-wrap justify-center gap-4">
           {isLoggedIn ? (
             <>
-              <Link href="/dashboard/campaigns/new">
+              <Link href="/app/campaigns/new">
                 <Button size="lg" className="text-base px-8">
                   Create campaign
                   <ArrowRight className="w-4 h-4 ml-2" />
@@ -888,7 +887,7 @@ function FinalCTASection({ isLoggedIn }: { isLoggedIn: boolean }) {
         </div>
         {!isLoggedIn && (
           <p className="text-sm text-slate-500 mt-6">
-            Free account includes 5 assessment credits. No credit card required.
+            Free account includes 5 assessment tests. No credit card required.
           </p>
         )}
       </div>
@@ -960,7 +959,7 @@ export default async function LandingPage() {
         <WhatCompaniesGetSection />
         <WhatIsAssessedSection />
         <TryItSection isLoggedIn={isLoggedIn} />
-        <DashboardPreviewSection />
+        <CampaignDetailPreviewSection />
         <WhyThisMattersSection />
         <FAQSection />
         <FinalCTASection isLoggedIn={isLoggedIn} />

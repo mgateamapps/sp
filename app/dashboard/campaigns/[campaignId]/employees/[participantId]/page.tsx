@@ -23,12 +23,16 @@ import {
 } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Employee Result | ScorePrompt',
-  description: 'View employee assessment result',
+  title: 'Participant Result | ScorePrompt',
+  description: 'Review participant assessment results and improvement areas',
 };
 
 interface EmployeeResultPageProps {
   params: Promise<{ campaignId: string; participantId: string }>;
+}
+
+function formatStatusLabel(status: string) {
+  return status.charAt(0).toUpperCase() + status.slice(1);
 }
 
 function CriterionBar({
@@ -91,7 +95,7 @@ export default async function EmployeeResultPage({
     <>
       <div className="mb-6 flex items-center justify-between">
         <Link
-          href={`/dashboard/campaigns/${campaignId}`}
+          href={`/app/campaigns/${campaignId}?tab=participants`}
           className="inline-flex items-center text-sm text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
@@ -100,36 +104,37 @@ export default async function EmployeeResultPage({
         {result && <PrintButton />}
       </div>
 
-      {/* Employee Header */}
+      {/* Participant Header */}
       <div className="rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-6 mb-6">
         <div className="flex items-start gap-4">
           <div className="w-12 h-12 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
             <User className="w-6 h-6 text-neutral-500" />
           </div>
           <div className="flex-1">
-            <h1 className="text-xl font-bold">{participant.employee.email}</h1>
-            {participant.employee.full_name && (
-              <p className="text-neutral-600 dark:text-neutral-400">
-                {participant.employee.full_name}
-              </p>
-            )}
+            <h1 className="text-xl font-bold">
+              {participant.employee.full_name || participant.employee.email}
+            </h1>
+            <p className="text-neutral-600 dark:text-neutral-400">{participant.employee.email}</p>
             <div className="flex items-center gap-4 mt-2 text-sm text-neutral-500">
               <span className="flex items-center gap-1">
                 <Calendar className="w-4 h-4" />
-                Campaign: {participant.campaign.name}
+                {participant.campaign.name}
               </span>
               {participant.completed_at && (
                 <span className="flex items-center gap-1">
                   <Clock className="w-4 h-4" />
-                  Completed: {formatDateTime(participant.completed_at)}
+                  Completed {formatDateTime(participant.completed_at)}
                 </span>
               )}
             </div>
+            <p className="text-sm text-neutral-500 mt-2">
+              This page explains how the participant performed across the assessment.
+            </p>
           </div>
           <Badge
             variant={participant.status === 'completed' ? 'default' : 'secondary'}
           >
-            {participant.status}
+            {formatStatusLabel(participant.status)}
           </Badge>
         </div>
       </div>
@@ -140,7 +145,7 @@ export default async function EmployeeResultPage({
             <Clock className="w-12 h-12 mx-auto mb-4 text-neutral-400" />
             <h2 className="text-lg font-semibold mb-2">No Results Yet</h2>
             <p className="text-neutral-600 dark:text-neutral-400">
-              This employee has not completed or submitted their assessment yet.
+              This participant has not completed or submitted their assessment yet.
             </p>
           </CardContent>
         </Card>
@@ -151,7 +156,7 @@ export default async function EmployeeResultPage({
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Trophy className="w-5 h-5 text-primary" />
-                Overall Score
+                Total Score
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -163,6 +168,7 @@ export default async function EmployeeResultPage({
                   <div className="text-neutral-500">out of 100</div>
                 </div>
                 <div>
+                  <p className="text-sm text-neutral-500 mb-1">Score Band</p>
                   <Badge variant="default" className="text-lg px-4 py-1">
                     {band?.label}
                   </Badge>
@@ -172,6 +178,7 @@ export default async function EmployeeResultPage({
                 </div>
               </div>
 
+              <p className="text-sm text-neutral-500 mb-3">Criteria Breakdown</p>
               <div className="space-y-3">
                 <CriterionBar
                   label="Clarity"
@@ -190,7 +197,7 @@ export default async function EmployeeResultPage({
                   score={result.assessment_score.output_format_score}
                 />
                 <CriterionBar
-                  label="Specificity"
+                  label="Verification"
                   score={result.assessment_score.verification_score}
                 />
               </div>
@@ -203,7 +210,7 @@ export default async function EmployeeResultPage({
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Target className="w-5 h-5" />
-                  Summary
+                  Summary Feedback
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -239,7 +246,7 @@ export default async function EmployeeResultPage({
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-amber-700 dark:text-amber-400">
                   <TrendingUp className="w-5 h-5" />
-                  Areas to Improve
+                  Next Improvement Focus
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -255,9 +262,33 @@ export default async function EmployeeResultPage({
             </Card>
           </div>
 
+          {result.assessment_score.coaching_tips_json.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Lightbulb className="w-5 h-5 text-amber-500" />
+                  Coaching Tips
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2">
+                  {result.assessment_score.coaching_tips_json.map((tip, i) => (
+                    <li key={i} className="flex items-start gap-2 text-sm">
+                      <span className="text-amber-500 mt-1">•</span>
+                      {tip}
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Scenario Breakdown */}
           <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Scenario Breakdown</h2>
+            <h2 className="text-xl font-semibold">Scenario Results</h2>
+            <p className="text-sm text-neutral-500">
+              Use the breakdown below to review strengths and next improvement areas.
+            </p>
 
             {result.scenario_scores.map((scenarioScore) => {
               const scenario = getScenario(scenarioScore.scenario_key);
@@ -283,14 +314,14 @@ export default async function EmployeeResultPage({
                     {/* User's Response */}
                     <div>
                       <h4 className="text-sm font-medium mb-2">
-                        Employee's Prompt:
+                        Prompt Used
                       </h4>
                       <div className="p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg text-sm">
                         {userResponse || 'No response provided'}
                       </div>
                     </div>
 
-                    {/* Criterion Scores */}
+                    {/* Score */}
                     <div className="grid grid-cols-5 gap-2 text-center text-xs">
                       <div>
                         <div className="text-neutral-500">Clarity</div>
@@ -311,36 +342,72 @@ export default async function EmployeeResultPage({
                         </div>
                       </div>
                       <div>
-                        <div className="text-neutral-500">Format</div>
+                        <div className="text-neutral-500">Output Format</div>
                         <div className="font-semibold">
                           {scenarioScore.output_format_score}/20
                         </div>
                       </div>
                       <div>
-                        <div className="text-neutral-500">Specificity</div>
+                        <div className="text-neutral-500">Verification</div>
                         <div className="font-semibold">
                           {scenarioScore.verification_score}/20
                         </div>
                       </div>
                     </div>
 
-                    {/* Feedback Summary */}
+                    {/* Summary Feedback */}
                     {scenarioScore.summary_feedback && (
                       <p className="text-sm text-neutral-600 dark:text-neutral-400">
                         {scenarioScore.summary_feedback}
                       </p>
                     )}
 
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                      <div>
+                        <p className="font-medium mb-1">Strengths</p>
+                        <ul className="space-y-1 text-neutral-600 dark:text-neutral-400">
+                          {scenarioScore.strengths_json.map((item, idx) => (
+                            <li key={idx}>- {item}</li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div>
+                        <p className="font-medium mb-1">Weaknesses</p>
+                        <ul className="space-y-1 text-neutral-600 dark:text-neutral-400">
+                          {scenarioScore.weaknesses_json.map((item, idx) => (
+                            <li key={idx}>- {item}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+
                     {/* Improved Prompt */}
                     {scenarioScore.improved_prompt && (
                       <div>
                         <h5 className="font-medium mb-2 flex items-center gap-2">
                           <Lightbulb className="w-4 h-4 text-amber-500" />
-                          Improved Prompt Example
+                          Improved Prompt
                         </h5>
                         <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg text-sm">
                           {scenarioScore.improved_prompt}
                         </div>
+                      </div>
+                    )}
+
+                    {scenarioScore.coaching_tips_json.length > 0 && (
+                      <div>
+                        <h5 className="font-medium mb-2 flex items-center gap-2">
+                          <Lightbulb className="w-4 h-4 text-amber-500" />
+                          Coaching Tips
+                        </h5>
+                        <ul className="space-y-2 text-sm">
+                          {scenarioScore.coaching_tips_json.map((tip, idx) => (
+                            <li key={idx} className="flex items-start gap-2">
+                              <span className="text-amber-500 mt-1">•</span>
+                              {tip}
+                            </li>
+                          ))}
+                        </ul>
                       </div>
                     )}
                   </CardContent>

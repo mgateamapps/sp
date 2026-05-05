@@ -52,8 +52,8 @@ function Header({ isLoggedIn }: { isLoggedIn: boolean }) {
             Pricing
           </Link>
           {isLoggedIn ? (
-            <Link href="/dashboard">
-              <Button size="sm">Go to dashboard</Button>
+            <Link href="/app/campaigns">
+              <Button size="sm">Go to Campaigns</Button>
             </Link>
           ) : (
             <>
@@ -71,8 +71,8 @@ function Header({ isLoggedIn }: { isLoggedIn: boolean }) {
         </nav>
         <div className="md:hidden">
           {isLoggedIn ? (
-            <Link href="/dashboard">
-              <Button size="sm">Dashboard</Button>
+            <Link href="/app/campaigns">
+              <Button size="sm">Campaigns</Button>
             </Link>
           ) : (
             <Link href="/auth/register">
@@ -100,7 +100,7 @@ function HeroSection() {
         </h1>
         <p className="text-lg text-slate-300 mb-8 max-w-2xl mx-auto">
           Start free with a personal test, or pay per employee for team assessments.
-          Simple per-seat pricing, no hidden fees.
+          Usage-based pricing, no hidden fees.
         </p>
       </div>
     </section>
@@ -127,10 +127,10 @@ function PricingSection() {
 
         {/* Credit packs */}
         <div className="text-center mb-10">
-          <h2 className="text-3xl font-bold text-heading dark:text-white mb-3">Credit packs for teams</h2>
+          <h2 className="text-3xl font-bold text-heading dark:text-white mb-3">Assessment packs for teams</h2>
           <p className="text-slate-500 dark:text-neutral-400 max-w-2xl mx-auto">
-            Buy credits upfront. 1 credit = 1 employee who <strong>completes</strong> an assessment.
-            Credits never expire. No subscriptions, no refund complexity.
+            Buy assessments upfront. 1 assessment = 1 employee who <strong>completes</strong> an assessment.
+            Assessments never expire. Straightforward usage-based pricing.
           </p>
         </div>
 
@@ -154,7 +154,7 @@ function PricingSection() {
                 <div className="mt-4">
                   <span className="text-4xl font-bold text-heading dark:text-white">{formatPrice(pack.price_cents)}</span>
                 </div>
-                <div className="text-sm text-slate-500 mt-1">{pack.credits} credits</div>
+                <div className="text-sm text-slate-500 mt-1">{pack.credits} assessments</div>
                 <div className="text-xs text-slate-400 mt-0.5">{formatPrice(Math.round(getPricePerCredit(pack)))} per assessment</div>
               </CardHeader>
               <CardContent className="pt-4">
@@ -190,7 +190,7 @@ function PricingSection() {
         </div>
 
         <p className="text-center text-slate-500 text-sm">
-          Need more than 500 credits?{' '}
+          Need more than 500 assessments?{' '}
           <a href="mailto:hello@scoreprompt.com" className="text-primary hover:underline">Contact us</a>{' '}
           for enterprise pricing.
         </p>
@@ -270,9 +270,9 @@ function FAQSection() {
         'The Test plan lets you personally experience the full assessment flow - all 5 scenarios and your personal feedback report. It\'s designed to help you understand what your team would go through before committing.',
     },
     {
-      question: 'How does the annual plan work?',
+      question: 'How does usage-based billing work?',
       answer:
-        'With an annual plan, you pay upfront for the year and get 4 assessment campaigns included. You pay for 3 campaigns but get 4 — that\'s a 25% savings. If you need more than 4 campaigns in a year, additional ones are billed at standard per-campaign rates.',
+        'You buy assessment packs upfront and only use one assessment when an employee completes the test. There are no annual commitments and no monthly seat minimums.',
     },
     {
       question: 'Do employees need accounts?',
@@ -280,14 +280,14 @@ function FAQSection() {
         'No. Employees complete the assessment through a secure email link. No separate employee login is required.',
     },
     {
-      question: 'Can we switch from monthly to annual?',
+      question: 'Can we buy more assessments later?',
       answer:
-        'Yes! You can upgrade to an annual plan at any time to start saving. Your existing data and campaigns will be preserved.',
+        'Yes. You can top up your assessment balance any time from Billing. Your existing campaigns and results stay unchanged.',
     },
     {
-      question: 'What happens if we have more than 50 employees?',
+      question: 'What happens if we need high volume?',
       answer:
-        'Use the Enterprise plan which supports unlimited employees at a lower per-employee rate. Both pay-per-campaign and annual options are available.',
+        'If you need more than our listed packs, contact us for a custom volume package. The product remains usage-based.',
     },
     {
       question: 'Is this a training platform?',
@@ -361,7 +361,7 @@ function FinalCTASection() {
           </Link>
           <Link href="/auth/register">
             <Button variant="outline" size="lg" className="text-base px-8 bg-white/10 border-white/20 text-white hover:bg-white/20">
-              Start Team plan
+              Start team assessments
             </Button>
           </Link>
         </div>

@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
               currency: 'usd',
               product_data: {
                 name: `ScorePrompt ${pack.name} Pack`,
-                description: `${pack.credits} assessment credits — ${formatPrice(Math.round(pack.price_cents / pack.credits))} per credit`,
+                description: `${pack.credits} assessments — ${formatPrice(Math.round(pack.price_cents / pack.credits))} per assessment`,
               },
               unit_amount: pack.price_cents,
             },
@@ -38,8 +38,8 @@ export async function POST(request: NextRequest) {
           },
         ],
         mode: 'payment',
-        success_url: `${appUrl}/dashboard/billing?purchase=success`,
-        cancel_url: `${appUrl}/dashboard/billing`,
+        success_url: `${appUrl}/app/billing?purchase=success`,
+        cancel_url: `${appUrl}/app/billing`,
         metadata: {
           type: 'credit_pack',
           packId: pack.id,

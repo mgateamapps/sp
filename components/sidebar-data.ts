@@ -1,5 +1,4 @@
 import {
-  House,
   Settings,
   FolderKanban,
   Wallet,
@@ -10,38 +9,32 @@ import {
 export const data = {
   navMain: [
     {
-      title: "Dashboard",
-      url: "/dashboard",
-      icon: House,
-      isActive: true,
-    },
-    {
       title: "Campaigns",
-      url: "/dashboard/campaigns",
+      url: "/app/campaigns",
       icon: FolderKanban,
       isActive: true,
     },
     {
-      title: "People",
-      url: "/dashboard/people",
-      icon: Users,
-      isActive: true,
-    },
-    {
-      title: "Insights",
-      url: "/dashboard/insights",
+      title: "Summary",
+      url: "/app/summary",
       icon: BarChart3,
       isActive: true,
     },
     {
+      title: "Participants",
+      url: "/app/participants",
+      icon: Users,
+      isActive: true,
+    },
+    {
       title: "Billing",
-      url: "/dashboard/billing",
+      url: "/app/billing",
       icon: Wallet,
       isActive: true,
     },
     {
       title: "Settings",
-      url: "/dashboard/settings",
+      url: "/app/settings",
       icon: Settings,
       isActive: true,
     },

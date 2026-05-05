@@ -33,11 +33,34 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Protect /dashboard routes - require authentication
-  if (
-    !user &&
-    request.nextUrl.pathname.startsWith("/dashboard")
-  ) {
+  const pathname = request.nextUrl.pathname;
+
+  const legacyRedirects: Record<string, string> = {
+    "/dashboard": "/app/campaigns",
+    "/dashboard/campaigns": "/app/campaigns",
+    "/dashboard/campaigns/new": "/app/campaigns/new",
+    "/dashboard/insights": "/app/summary",
+    "/dashboard/people": "/app/participants",
+    "/dashboard/billing": "/app/billing",
+    "/dashboard/settings": "/app/settings",
+    "/dashboard/summary": "/app/summary",
+  };
+
+  if (pathname.startsWith("/dashboard/campaigns/")) {
+    const targetPath = pathname.replace("/dashboard/campaigns/", "/app/campaigns/");
+    const url = request.nextUrl.clone();
+    url.pathname = targetPath;
+    return NextResponse.redirect(url);
+  }
+
+  if (legacyRedirects[pathname]) {
+    const url = request.nextUrl.clone();
+    url.pathname = legacyRedirects[pathname];
+    return NextResponse.redirect(url);
+  }
+
+  // Protect admin routes - require authentication
+  if (!user && (pathname.startsWith("/app") || pathname.startsWith("/dashboard"))) {
     const url = request.nextUrl.clone();
     url.pathname = "/auth/login";
     return NextResponse.redirect(url);
@@ -50,7 +73,7 @@ export async function updateSession(request: NextRequest) {
       request.nextUrl.pathname.startsWith("/auth/register"))
   ) {
     const url = request.nextUrl.clone();
-    url.pathname = "/dashboard";
+    url.pathname = "/app/campaigns";
     return NextResponse.redirect(url);
   }
 

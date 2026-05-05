@@ -128,8 +128,8 @@ export function NavMain({ items }: { items: SidebarItem[] }) {
 
           if (item.url && item.title) {
             const isMenuActive =
-              pathname === item.url || 
-              (item.url !== "/dashboard" && pathname.startsWith(item.url + "/"));
+              pathname === item.url ||
+              pathname.startsWith(item.url + "/");
 
             return (
               <SidebarMenuItem key={item.title}>

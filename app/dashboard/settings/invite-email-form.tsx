@@ -35,7 +35,16 @@ export function InviteEmailForm({ inviteMessage, inviteReplyTo }: InviteEmailFor
   return (
     <form onSubmit={handleSave} className="space-y-5">
       <div className="space-y-2">
-        <Label htmlFor="invite_reply_to">Reply-to email</Label>
+        <Label htmlFor="invite_subject">Default Invite Subject</Label>
+        <Input
+          id="invite_subject"
+          value="Your ScorePrompt assessment is ready"
+          disabled
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="invite_reply_to">Default Reply-To Email</Label>
         <Input
           id="invite_reply_to"
           name="invite_reply_to"
@@ -51,8 +60,13 @@ export function InviteEmailForm({ inviteMessage, inviteReplyTo }: InviteEmailFor
       </div>
 
       <div className="space-y-2">
+        <Label htmlFor="sender_name">Sender Name</Label>
+        <Input id="sender_name" value="Configured from organization name" disabled />
+      </div>
+
+      <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <Label htmlFor="invite_message">Custom message</Label>
+          <Label htmlFor="invite_message">Default Invite Message</Label>
           <span className={`text-xs ${messageLength > MAX_MESSAGE_LENGTH ? 'text-red-500' : 'text-neutral-400'}`}>
             {messageLength} / {MAX_MESSAGE_LENGTH}
           </span>
@@ -75,13 +89,18 @@ export function InviteEmailForm({ inviteMessage, inviteReplyTo }: InviteEmailFor
       <div className="flex items-start gap-3 p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
         <Info className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" />
         <p className="text-xs text-blue-700 dark:text-blue-300">
-          These settings apply to all future invite emails. Already sent invites are not affected.
+          Email Preview: these settings apply to future invites only.
         </p>
       </div>
 
-      <Button type="submit" size="sm" disabled={isSaving || messageLength > MAX_MESSAGE_LENGTH}>
-        {isSaving ? <><Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" />Saving...</> : 'Save invite settings'}
-      </Button>
+      <div className="flex items-center gap-2">
+        <Button type="submit" size="sm" disabled={isSaving || messageLength > MAX_MESSAGE_LENGTH}>
+          {isSaving ? <><Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" />Saving...</> : 'Save Changes'}
+        </Button>
+        <Button type="button" size="sm" variant="outline" disabled>
+          Preview Email
+        </Button>
+      </div>
     </form>
   );
 }

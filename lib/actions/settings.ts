@@ -26,8 +26,8 @@ export async function updateProfile(formData: FormData): Promise<SettingsResult>
 
   if (error) return { success: false, error: 'Failed to update profile' };
 
-  revalidatePath('/dashboard/settings');
-  revalidatePath('/dashboard');
+  revalidatePath('/app/settings');
+  revalidatePath('/app/campaigns');
   return { success: true };
 }
 
@@ -82,8 +82,8 @@ export async function uploadAvatar(formData: FormData): Promise<SettingsResult> 
   // Sync to auth metadata so header dropdown picks it up immediately
   await supabase.auth.updateUser({ data: { avatar_url: publicUrl } });
 
-  revalidatePath('/dashboard');
-  revalidatePath('/dashboard/settings');
+  revalidatePath('/app/campaigns');
+  revalidatePath('/app/settings');
   return { success: true, url: publicUrl };
 }
 
@@ -102,7 +102,7 @@ export async function updateOrganization(formData: FormData): Promise<SettingsRe
 
   if (error) return { success: false, error: 'Failed to update organization' };
 
-  revalidatePath('/dashboard/settings');
+  revalidatePath('/app/settings');
   return { success: true };
 }
 
@@ -136,7 +136,7 @@ export async function uploadLogo(formData: FormData): Promise<SettingsResult> {
     .update({ logo_url: publicUrl, updated_at: new Date().toISOString() })
     .eq('id', admin.organization_id);
 
-  revalidatePath('/dashboard/settings');
+  revalidatePath('/app/settings');
   return { success: true, url: publicUrl };
 }
 
@@ -163,6 +163,6 @@ export async function updateInviteSettings(formData: FormData): Promise<Settings
 
   if (error) return { success: false, error: 'Failed to update invite settings' };
 
-  revalidatePath('/dashboard/settings');
+  revalidatePath('/app/settings');
   return { success: true };
 }

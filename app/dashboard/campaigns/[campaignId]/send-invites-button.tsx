@@ -23,7 +23,7 @@ export function SendInvitesButton({ campaignId, pendingCount, creditBalance }: S
 
   async function handleSend() {
     if (pendingCount === 0) {
-      toast.error('No pending invites to send');
+      toast.error('No unopened participants to resend.');
       return;
     }
 
@@ -34,17 +34,17 @@ export function SendInvitesButton({ campaignId, pendingCount, creditBalance }: S
 
       if (result.success) {
         if (result.sent > 0) {
-          toast.success(`Sent ${result.sent} invite${result.sent > 1 ? 's' : ''}`);
+          toast.success(`Resent ${result.sent} invite${result.sent > 1 ? 's' : ''}`);
         }
         if (result.failed > 0) {
-          toast.error(`Failed to send ${result.failed} invite${result.failed > 1 ? 's' : ''}`);
+          toast.error(`Failed to resend ${result.failed} invite${result.failed > 1 ? 's' : ''}`);
         }
         if (result.sent === 0 && result.failed === 0) {
-          toast.success(result.error || 'No new invites to send');
+          toast.success(result.error || 'No unopened invites to resend');
         }
         router.refresh();
       } else {
-        toast.error(result.error || 'Failed to send invites');
+        toast.error(result.error || 'Failed to resend invites');
       }
     } catch {
       toast.error('An unexpected error occurred');
@@ -60,10 +60,10 @@ export function SendInvitesButton({ campaignId, pendingCount, creditBalance }: S
           <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
           <span>
             {creditBalance! <= 0
-              ? 'No credits — '
-              : `Only ${creditBalance} credits — `}
-            <Link href="/dashboard/billing" className="underline">
-              top up
+              ? 'No assessments available — '
+              : `Only ${creditBalance} assessments available — `}
+            <Link href="/app/billing" className="underline">
+              Buy Assessments
             </Link>{' '}
             to cover all {pendingCount} invites.
           </span>
@@ -81,7 +81,7 @@ export function SendInvitesButton({ campaignId, pendingCount, creditBalance }: S
         ) : (
           <>
             <Send className="w-4 h-4 mr-2" />
-            Send Invites {pendingCount > 0 && `(${pendingCount})`}
+            Resend Invites {pendingCount > 0 && `(${pendingCount})`}
           </>
         )}
       </Button>

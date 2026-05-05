@@ -47,8 +47,8 @@ export async function GET(request: Request) {
         }
       }
 
-      // Existing user or user without organization - go to dashboard
-      return NextResponse.redirect(`${origin}/dashboard`);
+      // Existing user or user without organization - go to campaigns home
+      return NextResponse.redirect(`${origin}/app/campaigns`);
     }
   }
 

@@ -82,7 +82,7 @@ export function OrganizationForm({ name, logoUrl }: OrganizationFormProps) {
           onChange={handleLogoChange}
         />
         <div>
-          <p className="text-sm font-medium text-neutral-900 dark:text-white">Company logo</p>
+          <p className="text-sm font-medium text-neutral-900 dark:text-white">Company Logo</p>
           <p className="text-xs text-neutral-500 mt-0.5">Shown on assessment invite emails</p>
           <p className="text-xs text-neutral-400 mt-0.5">JPEG, PNG or WebP · max 5MB</p>
           {currentLogo && (
@@ -101,7 +101,7 @@ export function OrganizationForm({ name, logoUrl }: OrganizationFormProps) {
       {/* Company name */}
       <form onSubmit={handleSave} className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="name">Company name</Label>
+          <Label htmlFor="name">Company Name</Label>
           <Input
             id="name"
             name="name"
@@ -112,7 +112,7 @@ export function OrganizationForm({ name, logoUrl }: OrganizationFormProps) {
           />
         </div>
         <Button type="submit" size="sm" disabled={isSaving}>
-          {isSaving ? <><Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" />Saving...</> : 'Save organization'}
+          {isSaving ? <><Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" />Saving...</> : 'Save Changes'}
         </Button>
       </form>
     </div>

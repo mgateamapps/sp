@@ -53,7 +53,7 @@ export function ProfileForm({ fullName, email }: ProfileFormProps) {
       <form onSubmit={handleSaveName} className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="full_name">Full name</Label>
+            <Label htmlFor="full_name">Full Name</Label>
             <Input
               id="full_name"
               name="full_name"
@@ -75,17 +75,17 @@ export function ProfileForm({ fullName, email }: ProfileFormProps) {
           </div>
         </div>
         <Button type="submit" size="sm" disabled={isSavingName}>
-          {isSavingName ? <><Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" />Saving...</> : 'Save name'}
+          {isSavingName ? <><Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" />Saving...</> : 'Save Changes'}
         </Button>
       </form>
 
       {/* Password */}
       <div className="border-t border-neutral-200 dark:border-neutral-700 pt-6">
-        <p className="text-sm font-semibold text-neutral-900 dark:text-white mb-4">Change password</p>
+        <p className="text-sm font-semibold text-neutral-900 dark:text-white mb-4">Change Password</p>
         <form onSubmit={handleSavePassword} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="new_password">New password</Label>
+              <Label htmlFor="new_password">Change Password</Label>
               <div className="relative">
                 <Input
                   id="new_password"
@@ -107,7 +107,7 @@ export function ProfileForm({ fullName, email }: ProfileFormProps) {
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirm_password">Confirm password</Label>
+              <Label htmlFor="confirm_password">Confirm Password</Label>
               <div className="relative">
                 <Input
                   id="confirm_password"
@@ -129,7 +129,7 @@ export function ProfileForm({ fullName, email }: ProfileFormProps) {
             </div>
           </div>
           <Button type="submit" size="sm" variant="outline" disabled={isSavingPassword}>
-            {isSavingPassword ? <><Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" />Updating...</> : 'Update password'}
+            {isSavingPassword ? <><Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" />Updating...</> : 'Save Changes'}
           </Button>
         </form>
       </div>

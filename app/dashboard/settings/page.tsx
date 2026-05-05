@@ -22,7 +22,11 @@ export default async function SettingsPage() {
 
   return (
     <>
-      {/* Free trial credits banner */}
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold">Settings</h1>
+      </div>
+
+      {/* Free trial assessments banner */}
       {trial.granted && (
         <div className="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-5 mb-6">
           <div className="flex items-center justify-between flex-wrap gap-4">
@@ -32,12 +36,12 @@ export default async function SettingsPage() {
               </div>
               <div>
                 <p className="text-sm font-semibold text-neutral-900 dark:text-white">
-                  Free trial credits
+                  Free trial assessments
                 </p>
                 <p className="text-sm text-neutral-500 dark:text-neutral-400">
                   {trial.remaining > 0
-                    ? `${trial.remaining} of ${trial.total} trial credits remaining — try the product before buying.`
-                    : `All ${trial.total} trial credits used. Buy more to keep assessing.`}
+                    ? `${trial.remaining} of ${trial.total} trial assessments remaining — try the product before buying.`
+                    : `All ${trial.total} trial assessments used. Buy more to keep assessing.`}
                 </p>
               </div>
             </div>
@@ -55,10 +59,10 @@ export default async function SettingsPage() {
                 </span>
               </div>
               <Link
-                href="/dashboard/billing"
+                href="/app/billing"
                 className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
               >
-                Buy credits
+                Buy Assessments
                 <ArrowUpRight className="w-3.5 h-3.5" />
               </Link>
             </div>
@@ -71,7 +75,7 @@ export default async function SettingsPage() {
         <div className="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 overflow-hidden">
           <div className="px-6 py-4 border-b border-neutral-200 dark:border-neutral-700">
             <h2 className="text-base font-semibold text-neutral-900 dark:text-white">Profile</h2>
-            <p className="text-sm text-neutral-500 mt-0.5">Your personal account details</p>
+            <p className="text-sm text-neutral-500 mt-0.5">Update your account details.</p>
           </div>
           <div className="p-6">
             <ProfileForm
@@ -85,7 +89,7 @@ export default async function SettingsPage() {
         <div className="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 overflow-hidden">
           <div className="px-6 py-4 border-b border-neutral-200 dark:border-neutral-700">
             <h2 className="text-base font-semibold text-neutral-900 dark:text-white">Organization</h2>
-            <p className="text-sm text-neutral-500 mt-0.5">Your company name and logo</p>
+            <p className="text-sm text-neutral-500 mt-0.5">Set company-level defaults.</p>
           </div>
           <div className="p-6">
             <OrganizationForm
@@ -98,8 +102,8 @@ export default async function SettingsPage() {
         {/* Invite email */}
         <div className="rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 overflow-hidden">
           <div className="px-6 py-4 border-b border-neutral-200 dark:border-neutral-700">
-            <h2 className="text-base font-semibold text-neutral-900 dark:text-white">Invite email</h2>
-            <p className="text-sm text-neutral-500 mt-0.5">Customize what employees receive when invited to an assessment</p>
+            <h2 className="text-base font-semibold text-neutral-900 dark:text-white">Invite Defaults</h2>
+            <p className="text-sm text-neutral-500 mt-0.5">Changes here apply to future invites only.</p>
           </div>
           <div className="p-6">
             <InviteEmailForm

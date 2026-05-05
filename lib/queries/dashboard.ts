@@ -458,7 +458,7 @@ export async function getCommonWeaknesses(
     },
     {
       criterion: 'verification',
-      label: 'Specificity',
+      label: 'Verification',
       averageScore: Math.round((totals.verification / count) * 5),
     },
   ];
@@ -847,7 +847,7 @@ export async function getNeedsAttention(
       { name: 'Context', score: score.context_score },
       { name: 'Constraints', score: score.constraints_score },
       { name: 'Output Format', score: score.output_format_score },
-      { name: 'Specificity', score: score.verification_score },
+      { name: 'Verification', score: score.verification_score },
     ].sort((a, b) => a.score - b.score);
 
     results.push({

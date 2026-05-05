@@ -99,7 +99,7 @@ export async function createCampaign(formData: FormData): Promise<CreateCampaign
       console.error('Failed to insert participants:', participantsError);
     }
 
-    revalidatePath('/dashboard/campaigns');
+    revalidatePath('/app/campaigns');
     return { success: true, campaignId: campaign.id };
   } catch (error) {
     console.error('Create campaign error:', error);
@@ -111,6 +111,6 @@ export async function createCampaignAndRedirect(formData: FormData): Promise<voi
   const result = await createCampaign(formData);
   
   if (result.success && result.campaignId) {
-    redirect(`/dashboard/campaigns/${result.campaignId}`);
+    redirect(`/app/campaigns/${result.campaignId}`);
   }
 }

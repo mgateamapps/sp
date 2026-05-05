@@ -154,7 +154,7 @@ function generateWeaknesses(scores: {
     weaknesses.push('Lacks specific constraints or boundaries');
   }
   if (scores.output_format < 10) {
-    weaknesses.push('Output format not clearly specified');
+    weaknesses.push('Output Format is not clearly specified');
   }
   if (scores.verification < 10) {
     weaknesses.push('No verification or quality criteria included');
@@ -244,7 +244,7 @@ function generateScenarioSummary(
     return `Excellent prompt for ${scenarioName}. You demonstrated strong prompt engineering skills with clear communication and well-defined expectations.`;
   }
   if (totalScore >= 60) {
-    return `Good prompt for ${scenarioName}. Your prompt covers the basics well, with room for improvement in specificity and structure.`;
+    return `Good prompt for ${scenarioName}. Your prompt covers the basics well, with room for improvement in verification criteria and structure.`;
   }
   if (totalScore >= 40) {
     return `Developing prompt for ${scenarioName}. Consider adding more context, constraints, and output format specifications.`;

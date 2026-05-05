@@ -125,10 +125,10 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold">7. Payments and Subscriptions</h2>
+            <h2 className="text-xl font-semibold">7. Payments and Usage</h2>
             <p className="mt-2 text-sm leading-6 text-neutral-700 dark:text-neutral-300">
               Where applicable, payments are processed via Stripe (including checkout and subscription flows).
-              If you purchase annual plans or pay-per-campaign credits, your subscription status and usage are tracked by the system.
+              If you purchase assessment packs, your usage and balance are tracked by the system.
             </p>
             <p className="mt-2 text-sm leading-6 text-neutral-700 dark:text-neutral-300">
               Refunds, if available, may follow the MVP policy that supports partial refunds for employees who have not started.

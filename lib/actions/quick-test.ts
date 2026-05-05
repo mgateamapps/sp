@@ -100,5 +100,5 @@ export async function startQuickTest(): Promise<{ error: string } | never> {
     organizationName: org?.name ?? null,
   });
 
-  redirect(`/dashboard/campaigns/${campaign.id}?quick_test=1`);
+  redirect(`/app/campaigns/${campaign.id}?quick_test=1`);
 }

@@ -45,9 +45,11 @@ function ScenarioPreview({ domain }: { domain: CampaignDomain }) {
         </div>
         <div>
           <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">
-            Scenarios for {DOMAIN_LABELS[domain]} teams
+            Included Scenarios
           </p>
-          <p className="text-xs text-neutral-500">{scenarios.length} scenarios · sent to every participant</p>
+          <p className="text-xs text-neutral-500">
+            {DOMAIN_LABELS[domain]} domain · {scenarios.length} scenarios
+          </p>
         </div>
       </div>
 
@@ -88,7 +90,7 @@ export function NewCampaignForm() {
 
       if (result.success && result.campaignId) {
         toast.success('Campaign created successfully!');
-        router.push(`/dashboard/campaigns/${result.campaignId}`);
+        router.push(`/app/campaigns/${result.campaignId}`);
       } else {
         toast.error(result.error || 'Failed to create campaign');
       }
@@ -103,9 +105,9 @@ export function NewCampaignForm() {
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* Form */}
       <div className="lg:col-span-2 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-8">
-        <h1 className="text-2xl font-bold mb-2">Create New Campaign</h1>
+        <h1 className="text-2xl font-bold mb-2">New Campaign</h1>
         <p className="text-neutral-500 dark:text-neutral-400 mb-8">
-          Fill in the details below to launch a new AI literacy assessment.
+          Set up an assessment campaign and invite participants.
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -122,7 +124,7 @@ export function NewCampaignForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="domain">Team Domain *</Label>
+            <Label htmlFor="domain">Team or Domain *</Label>
             <Select
               value={domain}
               onValueChange={(v) => setDomain(v as CampaignDomain)}
@@ -139,9 +141,7 @@ export function NewCampaignForm() {
                 ))}
               </SelectContent>
             </Select>
-            <p className="text-sm text-neutral-500">
-              Scenarios are tailored to your team's domain for a more relevant assessment.
-            </p>
+            <p className="text-sm text-neutral-500">Scenarios are aligned to this team domain.</p>
           </div>
 
           <div className="space-y-2">
@@ -162,24 +162,59 @@ export function NewCampaignForm() {
               type="date"
               disabled={isSubmitting}
             />
+            <p className="text-sm text-neutral-500">Optional deadline for assessment completion.</p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="assessment_type">Assessment Type</Label>
+            <Input
+              id="assessment_type"
+              value="Standard Baseline with Domain Wording"
+              readOnly
+              className="bg-neutral-50 dark:bg-neutral-800 text-neutral-500"
+              disabled
+            />
             <p className="text-sm text-neutral-500">
-              Optional. Set a deadline for employees to complete the assessment.
+              Available options: Standard Baseline, Standard Baseline with Domain Wording.
             </p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="emails">Employee Emails *</Label>
+            <Label htmlFor="emails">Invite Participants *</Label>
             <Textarea
               id="emails"
               name="emails"
-              placeholder="Enter email addresses (one per line, or separated by commas)"
+              placeholder="Paste one email per line or separate emails with commas"
               rows={6}
               required
               disabled={isSubmitting}
             />
             <p className="text-sm text-neutral-500">
-              Enter email addresses of employees to invite. Duplicates will be automatically removed.
+              Paste one email per line or separate emails with commas.
             </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="invite_message">Custom Invite Message</Label>
+            <Textarea
+              id="invite_message"
+              name="invite_message"
+              placeholder="Optional message shown in the invite email."
+              rows={3}
+              disabled
+            />
+            <p className="text-sm text-neutral-500">Invite defaults are managed in Settings.</p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="reply_to">Reply-To Email</Label>
+              <Input id="reply_to" value="Configured in Settings" disabled />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="sender_name">Sender Name</Label>
+              <Input id="sender_name" value="Configured in Settings" disabled />
+            </div>
           </div>
 
           <div className="flex gap-4 pt-4">
@@ -187,13 +222,16 @@ export function NewCampaignForm() {
               {isSubmitting ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Creating...
+                  Saving...
                 </>
               ) : (
-                'Create Campaign'
+                'Save Draft'
               )}
             </Button>
-            <Link href="/dashboard/campaigns">
+            <Button type="button" variant="outline" disabled>
+              Launch Campaign
+            </Button>
+            <Link href="/app/campaigns">
               <Button type="button" variant="outline" disabled={isSubmitting}>
                 Cancel
               </Button>
@@ -207,14 +245,63 @@ export function NewCampaignForm() {
         <ScenarioPreview domain={domain} />
 
         <div className="rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-6">
-          <div className="space-y-5">
+          <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-200 mb-4">
+            Campaign Preview
+          </p>
+          <div className="space-y-3 text-sm">
+            <div className="flex justify-between gap-2">
+              <span className="text-neutral-500">Name</span>
+              <span className="font-medium">New Campaign</span>
+            </div>
+            <div className="flex justify-between gap-2">
+              <span className="text-neutral-500">Team</span>
+              <span className="font-medium">{DOMAIN_LABELS[domain]}</span>
+            </div>
+            <div className="flex justify-between gap-2">
+              <span className="text-neutral-500">Deadline</span>
+              <span className="font-medium">Not set</span>
+            </div>
+            <div className="flex justify-between gap-2">
+              <span className="text-neutral-500">Assessment Type</span>
+              <span className="font-medium">Standard Baseline with Domain Wording</span>
+            </div>
+            <div className="flex justify-between gap-2">
+              <span className="text-neutral-500">Invite Count</span>
+              <span className="font-medium">Calculated on save</span>
+            </div>
+            <div className="flex justify-between gap-2">
+              <span className="text-neutral-500">Estimated Usage</span>
+              <span className="font-medium">1 assessment per completion</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-6">
+          <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-200 mb-4">
+            Scoring Criteria
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-neutral-600 dark:text-neutral-300">
+            <p>Clarity</p>
+            <p>Context</p>
+            <p>Constraints</p>
+            <p>Output Format</p>
+            <p>Verification</p>
+          </div>
+        </div>
+
+        <div className="rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-6">
+          <div className="space-y-4">
             <div className="flex gap-3">
               <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                 <Mail className="w-4 h-4 text-primary" />
               </div>
               <div>
-                <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">Invites sent automatically</p>
-                <p className="text-sm text-neutral-500 dark:text-neutral-400">Each employee receives a unique assessment link by email.</p>
+                <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
+                  Invite Participants
+                </p>
+                <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                  Each participant receives a unique assessment link.
+                </p>
               </div>
             </div>
             <div className="flex gap-3">
@@ -222,28 +309,15 @@ export function NewCampaignForm() {
                 <ClipboardCheck className="w-4 h-4 text-primary" />
               </div>
               <div>
-                <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">No employee account needed</p>
-                <p className="text-sm text-neutral-500 dark:text-neutral-400">Employees complete the assessment directly from their email link.</p>
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                <BarChart3 className="w-4 h-4 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">Results appear in real time</p>
-                <p className="text-sm text-neutral-500 dark:text-neutral-400">Scores and insights update as employees complete the assessment.</p>
+                <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
+                  Usage Guidance
+                </p>
+                <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                  Usage is counted only when a participant completes the assessment.
+                </p>
               </div>
             </div>
           </div>
-        </div>
-
-        <div className="rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-6">
-          <ul className="space-y-2 text-sm text-neutral-500 dark:text-neutral-400">
-            <li className="flex gap-2"><span className="text-primary font-bold">·</span> Use a clear name so you can identify the campaign later (e.g. "Q2 2025 – Engineering").</li>
-            <li className="flex gap-2"><span className="text-primary font-bold">·</span> Set a deadline to increase completion rates.</li>
-            <li className="flex gap-2"><span className="text-primary font-bold">·</span> You can add more employees after creating the campaign.</li>
-          </ul>
         </div>
       </div>
     </div>

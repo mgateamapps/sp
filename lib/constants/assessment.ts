@@ -568,8 +568,8 @@ export const RUBRIC_CRITERIA: RubricCriterionDefinition[] = [
   },
   {
     key: 'verification',
-    label: 'Specificity',
-    description: 'The prompt forces specific, actionable output rather than generic advice',
+    label: 'Verification',
+    description: 'The prompt defines how output quality should be checked and validated',
     weight: 1,
   },
 ] as const;

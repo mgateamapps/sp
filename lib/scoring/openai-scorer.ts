@@ -47,7 +47,7 @@ SCORING CRITERIA (each 0-20):
    - 11-15: Clear format requirements with specified sections or structure
    - 16-20: Precisely defined output — sections with headers, priorities, length guidance, or a template — ensuring the output is immediately usable without reformatting
 
-5. **Specificity & Actionability** (0-20): Does the prompt force the AI to produce specific, actionable output rather than generic advice?
+5. **Verification** (0-20): Does the prompt define how output quality should be checked and validated?
    - 0-5: The AI could produce generic, textbook-level output that would apply to any situation
    - 6-10: Some specificity requested, but the output could still be largely generic
    - 11-15: Good specificity requirements; the output would be meaningfully tailored to the scenario
@@ -276,7 +276,7 @@ Evaluate this prompt against the 5 criteria. Remember: a prompt that just paraph
     contextAvg: number,
     constraintsAvg: number,
     outputFormatAvg: number,
-    specificityAvg: number,
+    verificationAvg: number,
     totalScore: number
   ): Promise<string> {
     const criteriaRanked = [
@@ -284,7 +284,7 @@ Evaluate this prompt against the 5 criteria. Remember: a prompt that just paraph
       { name: 'Context', score: contextAvg },
       { name: 'Constraints', score: constraintsAvg },
       { name: 'Output Format', score: outputFormatAvg },
-      { name: 'Specificity & Actionability', score: specificityAvg },
+      { name: 'Verification', score: verificationAvg },
     ].sort((a, b) => b.score - a.score);
 
     const strongest = criteriaRanked[0];
@@ -327,9 +327,9 @@ Do not use generic phrases like "great job" or "keep practicing". Be direct and 
 
   private fallbackSummary(totalScore: number): string {
     if (totalScore >= 80)
-      return 'Your prompts demonstrate expert-level structure and precision across scenarios. You consistently leverage scenario context and define output requirements. Continue pushing for even greater specificity in how you constrain the AI\'s output.';
+      return 'Your prompts demonstrate expert-level structure and precision across scenarios. You consistently leverage scenario context and define output requirements. Continue pushing for even stronger verification criteria in how outputs are checked.';
     if (totalScore >= 60)
-      return 'You write solid prompts that clearly communicate the task, though output format and specificity requirements could be tighter. Your strongest area is contextual grounding; your prompts would benefit from more explicit structure for the expected output. Focus on defining exactly what "done" looks like for each prompt.';
+      return 'You write solid prompts that clearly communicate the task, though output format and verification requirements could be tighter. Your strongest area is contextual grounding; your prompts would benefit from more explicit structure for the expected output. Focus on defining exactly what "done" looks like for each prompt.';
     if (totalScore >= 40)
       return 'Your prompts convey the basic intent but tend to restate the scenario rather than engineer the AI\'s response. The key gap is output format — without specifying structure, the AI has too much latitude. Start every prompt by defining the exact format and sections you expect.';
     if (totalScore >= 20)

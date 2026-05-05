@@ -84,7 +84,7 @@ async function handlePaymentCheckoutCompleted(session: Stripe.Checkout.Session) 
       .select('id')
       .single();
 
-    // Add credits to organization balance
+    // Add assessments to organization balance
     const { error: balanceError } = await supabase.rpc('increment_credit_balance', {
       org_id: organizationId,
       delta: creditCount,
@@ -110,10 +110,10 @@ async function handlePaymentCheckoutCompleted(session: Stripe.Checkout.Session) 
       amount: creditCount,
       type: 'purchase',
       payment_id: payment?.id ?? null,
-      description: `${packId ? packId.charAt(0).toUpperCase() + packId.slice(1) : 'Credit'} pack — ${creditCount} credits`,
+      description: `${packId ? packId.charAt(0).toUpperCase() + packId.slice(1) : 'Assessment'} pack — ${creditCount} assessments`,
     });
 
-    console.log(`Credit pack purchased: ${creditCount} credits for org ${organizationId}`);
+    console.log(`Assessment pack purchased: ${creditCount} assessments for org ${organizationId}`);
     return;
   }
 

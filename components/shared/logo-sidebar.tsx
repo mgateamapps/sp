@@ -10,7 +10,7 @@ function LogoSidebar() {
 
   return (
     <Link
-      href="/dashboard"
+      href="/app/campaigns"
       className={cn(
         'sidebar-logo h-[72px] py-3.5 flex items-center border-b border-neutral-100 dark:border-slate-700',
         isCollapsed ? 'px-3 justify-center' : 'px-4 flex justify-center'

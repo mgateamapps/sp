@@ -7,7 +7,7 @@ import { NewCampaignForm } from "./new-campaign-form";
 
 export const metadata: Metadata = {
   title: "New Campaign | ScorePrompt",
-  description: "Create a new assessment campaign",
+  description: "Set up an assessment campaign and invite participants",
 };
 
 export default async function NewCampaignPage() {
@@ -19,7 +19,7 @@ export default async function NewCampaignPage() {
   return (
     <>
       <div className="mb-6">
-        <Link href="/dashboard/campaigns" className="inline-flex items-center text-sm text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100">
+        <Link href="/app/campaigns" className="inline-flex items-center text-sm text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100">
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Campaigns
         </Link>

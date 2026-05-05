@@ -1,7 +1,7 @@
 import { validateInviteToken } from '@/lib/queries/invites';
 import { getAttemptByParticipantId } from '@/lib/queries/assessment';
 import { getFullAssessmentResult } from '@/lib/queries/scoring';
-import { getScenario, RUBRIC_CRITERIA, getScoreBand } from '@/lib/constants/assessment';
+import { getScenario, getScoreBand } from '@/lib/constants/assessment';
 import { ScoreBadge } from '@/components/ui/score-badge';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
@@ -125,7 +125,7 @@ export default async function FeedbackPage({ params }: FeedbackPageProps) {
               score={assessment_score.output_format_score}
             />
             <CriterionBar
-              label="Specificity"
+              label="Verification"
               score={assessment_score.verification_score}
             />
           </div>
@@ -257,11 +257,11 @@ export default async function FeedbackPage({ params }: FeedbackPageProps) {
                     <div className="font-semibold">{scenarioScore.constraints_score}/20</div>
                   </div>
                   <div>
-                    <div className="text-neutral-500">Format</div>
+                    <div className="text-neutral-500">Output Format</div>
                     <div className="font-semibold">{scenarioScore.output_format_score}/20</div>
                   </div>
                   <div>
-                    <div className="text-neutral-500">Specificity</div>
+                    <div className="text-neutral-500">Verification</div>
                     <div className="font-semibold">{scenarioScore.verification_score}/20</div>
                   </div>
                 </div>

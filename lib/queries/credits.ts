@@ -11,6 +11,16 @@ export interface CreditTransaction {
   created_at: string;
 }
 
+export interface BillingPayment {
+  id: string;
+  amount_cents: number;
+  employee_count: number;
+  status: 'pending' | 'completed' | 'failed' | 'refunded' | 'partially_refunded';
+  created_at: string;
+  completed_at: string | null;
+  stripe_checkout_session_id: string | null;
+}
+
 export async function getCreditBalance(organizationId: string): Promise<number> {
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -89,4 +99,20 @@ export async function getCreditTransactions(
 
   if (error || !data) return [];
   return data as CreditTransaction[];
+}
+
+export async function getBillingPayments(
+  organizationId: string,
+  limit = 50
+): Promise<BillingPayment[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('payments')
+    .select('id, amount_cents, employee_count, status, created_at, completed_at, stripe_checkout_session_id')
+    .eq('organization_id', organizationId)
+    .order('created_at', { ascending: false })
+    .limit(limit);
+
+  if (error || !data) return [];
+  return data as BillingPayment[];
 }

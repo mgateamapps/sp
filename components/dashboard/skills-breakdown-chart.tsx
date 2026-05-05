@@ -33,7 +33,7 @@ export default function SkillsBreakdownChart({
     "Context",
     "Constraints",
     "Output Format",
-    "Specificity",
+    "Verification",
   ];
   const values = [
     data.clarity,

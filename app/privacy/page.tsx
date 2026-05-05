@@ -111,7 +111,7 @@ export default function PrivacyPage() {
               <li>Send assessment invites and validate secure invite links.</li>
               <li>Score employee responses and generate structured feedback.</li>
               <li>Provide organization dashboards with aggregated results and status tracking.</li>
-              <li>Process payments and manage subscription credits/usage.</li>
+              <li>Process payments and manage assessment usage.</li>
               <li>Maintain security, reliability, and prevent unauthorized access.</li>
             </ul>
           </section>
